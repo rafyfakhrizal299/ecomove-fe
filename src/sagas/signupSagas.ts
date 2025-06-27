@@ -1,6 +1,6 @@
 import { takeLatest, put, call } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
-import { signupRequest, signupSuccess, signupFailure } from 'slices/signupSlice'; // Impor dari signupSlice
+import { signupFailure, signupRequest, signupSuccess } from '../slices/signupSlice';
 
 function* callSignupApi(signupData: {
   serviceType: string;

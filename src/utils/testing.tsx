@@ -4,9 +4,9 @@ import { render } from '@testing-library/react';
 import type { RenderOptions } from '@testing-library/react';
 import type { PreloadedState } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
-import rootReducer from 'slices';
 
 import createStore from '../store';
+import rootReducer from '../slices';
 
 const s = createStore();
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'queries'> {

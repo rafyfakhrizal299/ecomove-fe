@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from 'app';
 import 'assets/css/main.css'; // Pastikan Anda memiliki file ini untuk Tailwind CSS
+import App from './app';
 
 const container = document.getElementById('root');
 if (container) {

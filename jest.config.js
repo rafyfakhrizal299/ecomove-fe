@@ -8,4 +8,5 @@ module.exports = {
     '\\.jpg': '<rootDir>/__mocks__/svg.js',
     '\\.png': '<rootDir>/__mocks__/svg.js',
   },
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
 };

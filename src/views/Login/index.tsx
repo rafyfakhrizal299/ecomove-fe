@@ -119,7 +119,8 @@ const LoginPage: React.FC = () => {
         <div className="mt-auto space-y-2">
           <button
             type="submit"
-            onClick={handleSubmit}
+            // onClick={handleSubmit}
+            onClick={handleSkipLogin}
             // Ukuran font diubah menjadi text-lg
             className="w-full bg-[#5e9142] text-white py-4 px-8 rounded-full font-bold text-lg hover:bg-[#4e7a36] focus:outline-none focus:ring-2 focus:ring-[#5e9142] focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200"
             disabled={loading}

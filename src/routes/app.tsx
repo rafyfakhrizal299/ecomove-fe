@@ -5,7 +5,7 @@ import LoginPage from './../views/Login';
 import HomePage from './../views/Home';
 
 import { RootState } from './../store';
-import SignupPage from 'views/Auth/SignupPage';
+import SignupPage from '../views/Auth/SignupPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);

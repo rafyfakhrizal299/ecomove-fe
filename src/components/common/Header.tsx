@@ -3,8 +3,8 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
-import { logout } from 'slices/auth';
 import LogoEco from '../../assets/img/Ecomove_Logo.png';
+import { logout } from '../../slices/auth';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();

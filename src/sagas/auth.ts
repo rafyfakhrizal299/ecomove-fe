@@ -3,7 +3,7 @@ import { takeLatest, put, call } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
 // Pastikan path ini benar dan aksi-aksi ini diekspor sebagai named export dari slice
 import { loginRequest, loginSuccess, loginFailure } from '../slices/auth';
-import axios from 'axios'; // Pastikan axios sudah diinstal
+import axios, { AxiosResponse } from 'axios'; // Pastikan axios sudah diinstal
 
 // --- PERBAIKAN: Tipe aksi untuk PayloadAction ---
 // Menggunakan 'typeof loginRequest.type' lebih aman karena mengambil tipe string dari aksi itu sendiri
@@ -27,14 +27,18 @@ function* handleLoginRequest(
 // --- FUNGSI API DI SAGA TETAP SAMA ---
 // Simulasi panggilan API login
 // Fungsi ini terisolasi dan bisa diuji secara terpisah
-function* loginApi(credentials: { username: string; password: string }) {
+function* loginApi(credentials: {
+  username: string;
+  password: string;
+}): Generator<any, any, AxiosResponse> {
   try {
-    // Ganti URL ini dengan endpoint API backend Anda yang sebenarnya
-    const response = yield call(axios.post, 'http://localhost:5000/api/auth/login', credentials);
-    // Jika respons sukses, kembalikan data
+    const response: AxiosResponse = yield call(
+      axios.post,
+      'http://localhost:5000/api/auth/login',
+      credentials,
+    );
     return response.data;
   } catch (error: any) {
-    // Jika API mengembalikan error, lempar kembali error dengan pesan yang relevan
     if (axios.isAxiosError(error) && error.response) {
       throw new Error(error.response.data.message || 'Invalid username or password.');
     }

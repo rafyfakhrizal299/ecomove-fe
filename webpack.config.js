@@ -17,6 +17,8 @@ baseConfig = {
   output: {
     path: DIST_PATH,
     filename: 'js/[name].bundle.js',
+    publicPath: '/',
+    clean: true,
   },
   resolve: {
     modules: [APP_PATH, 'node_modules'],
@@ -28,6 +30,19 @@ baseConfig = {
         test: /\.(ts|tsx|js)$/,
         loader: 'babel-loader',
         exclude: /node_modules/,
+        options: {
+          presets: [
+            '@babel/preset-env',
+            [
+              '@babel/preset-react',
+              {
+                runtime: 'automatic',
+              },
+            ],
+            '@babel/preset-typescript',
+          ],
+          plugins: [].filter(Boolean),
+        },
       },
       {
         test: /\.css$/,

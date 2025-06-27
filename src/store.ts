@@ -1,7 +1,6 @@
-/* eslint-disable import/no-import-module-exports */
 import createSagaMiddleware from 'redux-saga';
-import rootSaga from 'sagas';
-import rootReducer from 'slices';
+import rootSaga from './sagas'; // Pastikan path relatifnya benar
+import rootReducer from './slices'; // Pastikan path relatifnya benar
 import { configureStore } from '@reduxjs/toolkit';
 import type { PreloadedState } from '@reduxjs/toolkit';
 
@@ -31,3 +30,8 @@ export default function createStore(preloadedState?: PreloadedState<typeof rootR
 
   return store;
 }
+
+// Definisikan tipe RootState dari rootReducer
+export type RootState = ReturnType<typeof rootReducer>;
+// Definisikan tipe AppDispatch dari store
+export type AppDispatch = ReturnType<typeof createStore>['dispatch'];

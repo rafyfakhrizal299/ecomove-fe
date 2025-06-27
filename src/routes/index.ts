@@ -1,5 +1,5 @@
-import app from './app';
+import appRoutes from './app';
 
-const routes = [...app];
+const routes = [...appRoutes]; // Menyalin array rute jika diperlukan, atau langsung export appRoutes
 
-export default routes;
+export default routes; // Mengekspor array rute

@@ -1,13 +1,12 @@
 import { combineReducers } from '@reduxjs/toolkit';
-import userReducer from './users';
+import authReducer from './auth';
+import signupReducer from './signupSlice';
 
-function createReducer(injectedReducers = {}) {
-  const rootReducer = combineReducers({
-    user: userReducer,
-    ...injectedReducers,
-  });
-  return rootReducer;
-}
-const rootReducer = createReducer();
-export type RootState = ReturnType<typeof rootReducer>;
+// Gabungkan semua reducer di sini
+const rootReducer = combineReducers({
+  auth: authReducer,
+  signup: signupReducer,
+  // users: usersReducer,
+});
+
 export default rootReducer;

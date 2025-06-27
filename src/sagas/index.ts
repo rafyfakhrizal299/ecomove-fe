@@ -1,8 +1,12 @@
 import { all } from 'redux-saga/effects';
-import userWatcher from './users';
+import { authSaga } from './auth';
+import { signupSagas } from './signupSagas';
 
-function* rootSaga() {
-  yield all([userWatcher()]);
+// Gabungkan semua saga di sini
+export default function* rootSaga() {
+  yield all([
+    authSaga(),
+    signupSagas(),
+    // Tambahkan saga lainnya di sini
+  ]);
 }
-
-export default rootSaga;

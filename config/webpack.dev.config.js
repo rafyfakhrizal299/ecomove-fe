@@ -6,7 +6,10 @@ module.exports = () => {
     devtool: 'source-map',
     devServer: {
       open: true,
+      historyApiFallback: true,
+      port: 8080,
+      hot: true,
     },
-    plugins: [],
+    plugins: [new webpack.HotModuleReplacementPlugin()],
   };
 };

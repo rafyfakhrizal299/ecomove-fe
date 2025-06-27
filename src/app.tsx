@@ -1,16 +1,27 @@
 import React from 'react';
+import { Provider } from 'react-redux';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Layout from './components/common/Layout';
+import createStore from './store';
 import routes from './routes';
+import Layout from './components/common/Layout';
 
-const routers = createBrowserRouter([
+import 'assets/css/main.css';
+
+const store = createStore();
+
+const appRouter = createBrowserRouter([
   {
     element: <Layout />,
     children: routes,
   },
 ]);
+
 function App() {
-  return <RouterProvider router={routers} />;
+  return (
+    <Provider store={store}>
+      <RouterProvider router={appRouter} />
+    </Provider>
+  );
 }
 
 export default App;

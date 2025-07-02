@@ -6,6 +6,8 @@ import HomePage from './../views/Home';
 
 import { RootState } from './../store';
 import SignupPage from '../views/Auth/SignupPage';
+import UserManagement from '../views/UserManagement';
+import Transaction from '../views/Transaction';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -22,14 +24,6 @@ const appRoutes: Array<RouteObject> = [
     element: <SignupPage />,
   },
   {
-    path: '/',
-    element: (
-      <ProtectedRoute>
-        <HomePage />
-      </ProtectedRoute>
-    ),
-  },
-  {
     path: '/home',
     element: (
       <ProtectedRoute>
@@ -37,12 +31,22 @@ const appRoutes: Array<RouteObject> = [
       </ProtectedRoute>
     ),
   },
-  // Contoh rute lain yang Anda miliki (misalnya About)
-  // {
-  //   path: '/about',
-  //   element: <ProtectedRoute><About /></ProtectedRoute>, // Lindungi rute About juga
-  // },
-  // Catch-all route untuk 404 - mengarahkan kembali ke login
+  {
+    path: '/user',
+    element: (
+      <ProtectedRoute>
+        <UserManagement />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/transaction',
+    element: (
+      <ProtectedRoute>
+        <Transaction />
+      </ProtectedRoute>
+    ),
+  },
   {
     path: '*',
     element: <Navigate to="/login" replace />,

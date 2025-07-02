@@ -15,7 +15,13 @@ const Layout: React.FC = () => {
 
       <div className={`flex-1 flex flex-col ${isAuthenticated ? 'pl-64' : ''}`}>
         <main className="flex-1">
-          <Outlet />
+          <div
+            className={`min-h-screen ${
+              isAuthenticated ? 'p-6' : ''
+            } bg-gray-50 dark:bg-gray-900 transition-colors duration-300`}
+          >
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

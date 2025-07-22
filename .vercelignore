@@ -1,0 +1,8 @@
+node_modules
+src
+public
+.vscode
+.eslintrc.js
+webpack.config.js
+config/
+README.md

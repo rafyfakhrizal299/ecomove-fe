@@ -19,7 +19,7 @@ function* loginApi(credentials: {
   email: string;
   password: string;
 }): Generator<any, any, AxiosResponse> {
-  const API_URL = 'https://ecomove-be-production.up.railway.app/api/auth/login';
+  const API_URL = 'https://ecomove-be-dev.vercel.app/auth/login';
 
   try {
     const response: AxiosResponse = yield call(axios.post, API_URL, credentials);

@@ -1,70 +1,98 @@
-# Getting Started with Create React App
+# React Typescript Starter Kit
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Quick start
 
-## Available Scripts
+0.  Fork the repo
+1.  Clone repo using `git clone https://github.com/<github-username>/react-ts-starter-kit.git`
+2.  Move to the project directory: `cd react-ts-starter-kit`.<br />
+3.  Run `npm i` in order to install dependencies.<br />
+4.  Create new file in root directory named `.env` and add following lines:<br />
 
-In the project directory, you can run:
+```
+TITLE = "React Typescript Starter Kit"
+```
 
-### `npm start`
+5.  Now you can run `npm start` to see the app at `http://localhost:8080`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Folder Structure
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```
+  -- src/
+    -- @types/       -->  for custom typecsript types
+    -- assets/       -->  for static assets and styles
+    -- components/   -->  for components
+        -- common/   -->  for shared components
+    -- routes/       -->  for all routes
+    -- sagas/        -->  for redux sagas
+    -- services/     -->  for api requests
+    -- slices/       -->  for slices created using @reduxjs/toolkit
+    -- utils/        -->  for utility / helper functions
+    -- views/        -->  for page specific/container components
+```
 
-### `npm test`
+## Quick Guide/Links
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+This project is built on [React Js](https://reactjs.org/) using [Typescript](https://www.typescriptlang.org/)
 
-### `npm run build`
+Here are list of libraries being used in this project:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- [Redux](https://redux.js.org/) for state management
+- [Redux Saga](https://redux-saga.js.org/) for managing side-effect tasks
+- [Axios](https://github.com/axios/axios) for making api calls
+- [Redux Toolkit](https://redux-toolkit.js.org/) for consise redux code
+- [React Router](https://reactrouter.com/en/main) for routing
+- [Tailwind CSS](https://tailwindcss.com/) for styling
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Formatting and linting
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- [Aribnb style Guide](https://airbnb.io/javascript/react/) for rules, standards and conventions
+- [Prettier](https://prettier.io/) for code formatting
+- [ESLint](https://eslint.org/) for linting
 
-### `npm run eject`
+Bundling and compiling
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- [Babel](https://babeljs.io/) for transpiling
+- [Webpack](https://webpack.js.org/) for bundling
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Testing
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- [React testing library](https://testing-library.com/docs/react-testing-library/intro/) for rendering react components in tests
+- [Jest](https://jestjs.io/) for testing
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Other useful commands
 
-## Learn More
+`npm run lint` to fix automatically fixable lint errors
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+`npm run build` to build the project for production use
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+`npm run test` to run the tests
 
-### Code Splitting
+## Contributing to the project
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+1. All kinds of changes are welcome.
 
-### Analyzing the Bundle Size
+For help on Git commands visit [here](https://git-scm.com/)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+For help on GitHub visit [here](https://docs.github.com/en)
 
-### Making a Progressive Web App
+Notes:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+1.  This starter kit is inspired by this [react-starter-kit](https://github.com/sahilrajthapa/react-starter-kit).
 
-### Advanced Configuration
+2.  Please follow the naming and folder structure conventions while contributing to the project.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Useful Tools
 
-### Deployment
+### React Dev tools
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- [Firefox](https://addons.mozilla.org/en-US/firefox/addon/react-devtools/)
+- [Chrome](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en)
 
-### `npm run build` fails to minify
+### Redux Dev tools
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- [Firefox](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/)
+- [Chrome](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=es)
+
+### VS Code Extensions
+
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)

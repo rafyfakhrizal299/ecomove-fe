@@ -9,7 +9,7 @@ const sagaMiddleware = createSagaMiddleware();
 export default function createStore(preloadedState?: PreloadedState<typeof rootReducer>) {
   const store = configureStore({
     reducer: rootReducer,
-    preloadedState,
+    preloadedState, 
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleware),
   });
   let sagaTask = sagaMiddleware.run(rootSaga);

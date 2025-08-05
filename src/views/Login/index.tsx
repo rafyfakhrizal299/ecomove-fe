@@ -22,11 +22,11 @@ const LoginPage: React.FC = () => {
 
   const { isAuthenticated, loading, error } = useSelector((state: RootState) => state.auth);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/home');
-    }
-  }, [isAuthenticated, navigate]);
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     navigate('/home', { replace: true });
+  //   }
+  // }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     const savedEmail = localStorage.getItem('rememberedEmail');
@@ -46,10 +46,6 @@ const LoginPage: React.FC = () => {
     console.log('Payload sent from LoginPage:', { email, password });
     dispatch(loginRequest({ email, password }));
   };
-
-  // const handleSkipLogin = () => {
-  //   dispatch(loginSuccess({ email: 'guest' }));
-  // };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 font-poppins bg-gradient-to-b from-green-900 to-green-300">
@@ -97,7 +93,6 @@ const LoginPage: React.FC = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
               >
-                {/* Pastikan Anda sudah mengimpor ikon dari react-icons/io5 */}
                 {showPassword ? (
                   <IoEyeOffOutline className="h-5 w-5" />
                 ) : (
@@ -120,21 +115,22 @@ const LoginPage: React.FC = () => {
               </a>{' '}
             </div>
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+            {/* Tombol submit harus berada di dalam form atau memiliki type="submit" */}
+            {/* Hapus onClick={handleSubmit} dari sini */}
+            <button
+              type="submit" // Pastikan type="submit" ada
+              // onClick={handleSubmit}
+              className="w-full bg-[#5e9142] text-white py-4 px-8 rounded-full font-bold text-lg hover:bg-[#4e7a36] focus:outline-none focus:ring-2 focus:ring-[#5e9142] focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200"
+              disabled={loading}
+            >
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
           </form>
         </div>
 
-        <div className="mt-auto space-y-2">
-          <button
-            type="submit"
-            onClick={handleSubmit}
-            // onClick={handleSkipLogin}
-            // Ukuran font diubah menjadi text-lg
-            className="w-full bg-[#5e9142] text-white py-4 px-8 rounded-full font-bold text-lg hover:bg-[#4e7a36] focus:outline-none focus:ring-2 focus:ring-[#5e9142] focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200"
-            disabled={loading}
-          >
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </div>
+        {/* Bagian ini tidak diperlukan jika tombol submit sudah di dalam form */}
+        {/* <div className="mt-auto space-y-2"></div> */}
       </div>
     </div>
   );

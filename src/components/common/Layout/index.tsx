@@ -1,4 +1,3 @@
-// src/components/common/Layout.tsx
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';

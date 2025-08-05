@@ -1,44 +1,60 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { User, UserListResponse } from '../types/user';
 
-interface User {
-  name: string;
-  followers: number;
-  following: number;
+interface UsersState {
+  list: User[];
+  loading: boolean;
+  error: string | null;
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }
 
-export type UserState = {
-  user: User;
-  loading: boolean;
-};
-
-const initialState: UserState = {
-  user: {
-    name: '',
-    followers: 0,
-    following: 0,
-  },
+const initialState: UsersState = {
+  list: [],
   loading: false,
+  error: null,
+  page: 0,
+  limit: 10,
+  total: 0,
+  totalPages: 0,
 };
 
-const userSlice = createSlice({
-  name: 'user',
+const usersSlice = createSlice({
+  name: 'users',
   initialState,
   reducers: {
-    getUserRequest(state, { payload }: PayloadAction<string>) {
+    fetchUsersRequest(state, action: PayloadAction<{ page: number; limit: number }>) {
       state.loading = true;
+      state.error = null;
     },
-    getUserSuccess(state, { payload }: PayloadAction<User>) {
-      state.user.name = payload.name;
-      state.user.followers = payload.followers;
-      state.user.following = payload.following;
+    fetchUsersSuccess: (
+      state,
+      action: PayloadAction<{
+        data: User[];
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      }>,
+    ) => {
       state.loading = false;
+      state.error = null;
+      state.list = action.payload.data; // Mengambil 'data' dari payload, menyimpannya sebagai 'list'
+      state.page = action.payload.page;
+      state.limit = action.payload.limit;
+      state.total = action.payload.total;
+      state.totalPages = action.payload.totalPages;
     },
-    getUserFailure(state) {
+    fetchUsersFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
+      state.error = action.payload;
+      state.list = [];
     },
   },
 });
 
-export const { getUserRequest, getUserFailure, getUserSuccess } = userSlice.actions;
+export const { fetchUsersRequest, fetchUsersSuccess, fetchUsersFailure } = usersSlice.actions;
 
-export default userSlice.reducer;
+export default usersSlice.reducer;

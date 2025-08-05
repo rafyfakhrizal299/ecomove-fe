@@ -1,55 +1,66 @@
+// src/routes.ts
 import React from 'react';
-import { RouteObject, Navigate } from 'react-router-dom';
+import { RouteObject, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import LoginPage from './../views/Login';
 import HomePage from './../views/Home';
-
-import { RootState } from './../store';
 import SignupPage from '../views/Auth/SignupPage';
 import UserManagement from '../views/UserManagement';
 import Transaction from '../views/Transaction';
+import { RootState } from './../store';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+const AuthGuard: React.FC = () => {
+  const { isAuthenticated, loading } = useSelector((state: RootState) => state.auth);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  if (loading) {
+    return <div>Memuat...</div>;
+  }
+
+  if (!isAuthenticated && !['/login', '/signup'].includes(location.pathname)) {
+    return <Navigate to="/login" replace />;
+  } else if (isAuthenticated && ['/login', '/signup'].includes(location.pathname)) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <Outlet />;
 };
 
 const appRoutes: Array<RouteObject> = [
   {
-    path: '/login',
-    element: <LoginPage />,
-  },
-  {
-    path: '/signup',
-    element: <SignupPage />,
-  },
-  {
-    path: '/home',
-    element: (
-      <ProtectedRoute>
-        <HomePage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/user',
-    element: (
-      <ProtectedRoute>
-        <UserManagement />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/transaction',
-    element: (
-      <ProtectedRoute>
-        <Transaction />
-      </ProtectedRoute>
-    ),
+    path: '/',
+    element: <AuthGuard />,
+    children: [
+      {
+        path: '/',
+        element: <Navigate to="/home" replace />,
+      },
+      {
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        path: '/signup',
+        element: <SignupPage />,
+      },
+      {
+        path: '/home',
+        element: <HomePage />,
+      },
+      {
+        path: '/user',
+        element: <UserManagement />,
+      },
+      {
+        path: '/transaction',
+        element: <Transaction />,
+      },
+    ],
   },
   {
     path: '*',
-    element: <Navigate to="/login" replace />,
+    element: <Navigate to="/home" replace />,
   },
 ];
 

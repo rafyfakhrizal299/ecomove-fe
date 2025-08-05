@@ -33,8 +33,8 @@ const Header: React.FC = () => {
 
   return (
     <header
-      className={`bg-gray-50 dark:bg-gray-900 transition-colors duration-300 py-4 px-6 flex items-center justify-between fixed top-0 w-full z-10 ${
-        isAuthenticated ? 'left-64 w-[calc(100%-16rem)]' : 'left-0'
+      className={`bg-gray-50 dark:bg-gray-900 transition-colors duration-300 py-4 px-6 flex items-center justify-between fixed top-0 z-30 ${
+        isAuthenticated ? 'left-64 w-[calc(100%-16rem)]' : 'left-0 w-full'
       }`}
     >
       <div className="flex items-center"></div>

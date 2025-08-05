@@ -2,14 +2,24 @@ import { takeLatest, put, call } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { loginRequest, loginSuccess, loginFailure } from '../slices/auth';
 import axios, { AxiosResponse } from 'axios';
+import { fetchUsersRequest } from '../slices/users';
 
 function* handleLoginRequest(
   action: PayloadAction<{ email: string; password: string }>,
 ): Generator<any, void, any> {
-  console.log('Payload received in Saga (handleLoginRequest):', action.payload);
   try {
     const userData = yield call(loginApi, action.payload);
-    yield put(loginSuccess({ email: userData.email }));
+
+    const token = userData?.results?.token;
+    const userEmail = userData?.results?.user?.email;
+
+    if (token && userEmail) {
+      localStorage.setItem('authToken', token);
+      yield put(loginSuccess({ email: userEmail, token: token }));
+      yield put(fetchUsersRequest({ page: 1, limit: 10 })); // <--- TAMBAHKAN BARIS INI
+    } else {
+      throw new Error('Token atau email tidak ditemukan dalam respons API.');
+    }
   } catch (error: any) {
     yield put(loginFailure(error.message));
   }

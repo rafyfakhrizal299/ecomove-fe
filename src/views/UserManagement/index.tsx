@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { fetchUsersRequest } from '../../slices/users';
+import { deleteUserRequest, fetchUsersRequest } from '../../slices/users';
 import Card from '../../components/common/Card';
 import {
   IoEyeOutline as _IoEyeOutline,
@@ -9,6 +9,7 @@ import {
   IoTrashOutline as _IoTrashOutline,
 } from 'react-icons/io5';
 import { User } from '../../types/user';
+import EditUserModal from './editUser';
 
 const IoEyeOutline = _IoEyeOutline as React.ComponentType<{ className?: string }>;
 const IoPencilOutline = _IoPencilOutline as React.ComponentType<{ className?: string }>;
@@ -17,10 +18,36 @@ const IoTrashOutline = _IoTrashOutline as React.ComponentType<{ className?: stri
 const UserManagement: React.FC = () => {
   const dispatch = useDispatch();
   const { list, loading, error, page, totalPages } = useSelector((state: RootState) => state.users);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // State untuk pencarian
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+
+  const handleEditClick = (user: User) => {
+    setSelectedUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  // Handler untuk menutup modal
+  const handleCloseModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleDeleteUser = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      dispatch(deleteUserRequest(id));
+    }
+  };
+
+  useEffect(() => {
+    // Memuat pengguna saat komponen dimuat, jika daftar kosong
+    if (list.length === 0) {
+      dispatch(fetchUsersRequest({ page: 1, limit: 10 }));
+    }
+  }, [dispatch, list.length]);
 
   useEffect(() => {
     if (list.length === 0) {
@@ -134,13 +161,19 @@ const UserManagement: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
-                          <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-600">
+                          {/* <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-600">
                             <IoEyeOutline className="w-5 h-5" />
-                          </button>
-                          <button className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-600">
+                          </button> */}
+                          <button
+                            onClick={() => handleEditClick(user)}
+                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-600"
+                          >
                             <IoPencilOutline className="w-5 h-5" />
                           </button>
-                          <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600">
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600"
+                          >
                             <IoTrashOutline className="w-5 h-5" />
                           </button>
                         </div>
@@ -208,6 +241,9 @@ const UserManagement: React.FC = () => {
           </div>
         )}
       </Card>
+      {selectedUser && (
+        <EditUserModal isOpen={isEditModalOpen} onClose={handleCloseModal} user={selectedUser} />
+      )}
     </div>
   );
 };

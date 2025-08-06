@@ -9,11 +9,11 @@ const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
   root.render(
-    <React.StrictMode>
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </React.StrictMode>,
+    // <React.StrictMode>
+    <Provider store={store}>
+      <App />
+    </Provider>,
+    // </React.StrictMode>,
   );
 } else {
   console.error('Element with ID "root" not found in the document.');

@@ -5,6 +5,7 @@ import authReducer from '../slices/auth';
 import usersReducer from '../slices/users';
 import signupReducer from '../slices/signupSlice';
 import themeReducer from '../slices/themeSlice';
+import notificationReducer from '../slices/notification';
 
 import rootSaga from '../sagas';
 
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
   users: usersReducer,
   signup: signupReducer,
   theme: themeReducer,
+  notification: notificationReducer,
 });
 
 export const store = configureStore({

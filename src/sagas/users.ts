@@ -1,8 +1,21 @@
-import { call, put, select, takeLatest } from 'redux-saga/effects';
-import { PaginationData } from '../types/user';
-import { fetchUsersFailure, fetchUsersRequest, fetchUsersSuccess } from '../slices/users';
-import { getPaginatedUsers } from '../services/users';
+import { all, call, put, select, takeLatest } from 'redux-saga/effects';
+import { PaginationData, User } from '../types/user';
+import {
+  deleteUserFailure,
+  deleteUserRequest,
+  deleteUserSuccess,
+  fetchUsersFailure,
+  fetchUsersRequest,
+  fetchUsersSuccess,
+  updateUserFailure,
+  UpdateUserPayload,
+  updateUserRequest,
+  updateUserSuccess,
+} from '../slices/users';
+import { deleteUser, getPaginatedUsers, updateUser } from '../services/users';
 import { RootState } from '../store';
+import { PayloadAction } from '@reduxjs/toolkit';
+import { showNotification } from '../slices/notification';
 
 const getToken = (state: RootState) => state.auth.token;
 
@@ -16,13 +29,14 @@ function* fetchUsersTask(action: {
     }
 
     if (!token) {
-      yield put(fetchUsersFailure('Tidak ada token otentikasi. Silakan login kembali.'));
+      const errorMessage = 'Authentication not found. Please log in again.';
+      yield put(fetchUsersFailure(errorMessage));
+      yield put(showNotification({ message: errorMessage, type: 'error' }));
       return;
     }
 
     const url = 'https://ecomove-be-dev.vercel.app/auth/list-pagination';
 
-    // --- PENTING: UBAH TIPE INI MENJADI PaginationData ---
     const apiResponse: PaginationData = yield call(
       getPaginatedUsers,
       action.payload.page,
@@ -31,7 +45,7 @@ function* fetchUsersTask(action: {
     );
 
     if (apiResponse && apiResponse.data) {
-      const { data, page, limit, total, totalPages } = apiResponse; // <--- AKSES LANGSUNG DARI apiResponse
+      const { data, page, limit, total, totalPages } = apiResponse;
 
       yield put(
         fetchUsersSuccess({
@@ -42,17 +56,92 @@ function* fetchUsersTask(action: {
           totalPages,
         }),
       );
+      yield put(showNotification({ message: 'User list loaded successfully.', type: 'success' }));
     } else {
-      yield put(fetchUsersFailure('Respons API tidak memiliki struktur data yang valid.'));
+      const errorMessage = 'API response does not have a valid data structure.';
+      yield put(fetchUsersFailure(errorMessage));
+      yield put(showNotification({ message: errorMessage, type: 'error' }));
     }
   } catch (error: any) {
+    const errorMessage = error.message || 'Failed to load user list.';
     console.error('Error in fetchUsersTask:', error);
-    yield put(fetchUsersFailure(error.message || 'Gagal memuat daftar pengguna.'));
+    yield put(fetchUsersFailure(errorMessage));
+    yield put(showNotification({ message: errorMessage, type: 'error' }));
+  }
+}
+
+function* handleUpdateUser(action: PayloadAction<UpdateUserPayload>): Generator<any, void, any> {
+  try {
+    let token: string | null = yield select(getToken);
+    if (!token) {
+      token = localStorage.getItem('authToken');
+    }
+    if (!token) {
+      const errorMessage = 'Authentication token not found. Please log in again.';
+      yield put(updateUserFailure(errorMessage));
+      yield put(showNotification({ message: errorMessage, type: 'error' }));
+      yield put(fetchUsersRequest({ page: 1, limit: 10 }));
+      return;
+    }
+
+    const { id, ...userData } = action.payload;
+    const response: User = yield call(updateUser, id, userData, token);
+
+    yield put(updateUserSuccess(response));
+    yield put(showNotification({ message: 'User updated successfully.', type: 'success' }));
+
+    yield put(fetchUsersRequest({ page: 1, limit: 10 }));
+  } catch (error: any) {
+    const errorMessage = error.message || 'Failed to update user.';
+    yield put(updateUserFailure(errorMessage));
+    yield put(showNotification({ message: errorMessage, type: 'error' }));
+
+    yield put(fetchUsersRequest({ page: 1, limit: 10 }));
+  }
+}
+
+function* handleDeleteUser(action: PayloadAction<number>): Generator<any, void, any> {
+  try {
+    let token: string | null = yield select(getToken);
+    if (!token) {
+      const errorMessage = 'Authentication token not found. Please log in again.';
+      yield put(deleteUserFailure(errorMessage));
+      yield put(showNotification({ message: errorMessage, type: 'error' }));
+      yield put(fetchUsersRequest({ page: 1, limit: 10 }));
+      return;
+    }
+
+    const id = action.payload;
+
+    // ---- Tambahan: Validasi ID sebelum memanggil API ----
+    if (!id || typeof id !== 'string') {
+      const errorMessage = 'Invalid user ID. Cannot perform delete operation.';
+      yield put(deleteUserFailure(errorMessage));
+      yield put(showNotification({ message: errorMessage, type: 'error' }));
+      yield put(fetchUsersRequest({ page: 1, limit: 10 }));
+      return;
+    }
+
+    yield call(deleteUser, id, token);
+
+    yield put(deleteUserSuccess(id));
+    yield put(showNotification({ message: 'User deleted successfully.', type: 'success' }));
+    yield put(fetchUsersRequest({ page: 1, limit: 10 }));
+  } catch (error: any) {
+    // ---- Perbaikan: Ambil pesan error dari respons API jika tersedia ----
+    const errorMessage = error.response?.data?.message || 'Failed to delete user.';
+    yield put(deleteUserFailure(errorMessage));
+    yield put(showNotification({ message: errorMessage, type: 'error' }));
+    yield put(fetchUsersRequest({ page: 1, limit: 10 }));
   }
 }
 
 function* usersWatcher() {
-  yield takeLatest(fetchUsersRequest, fetchUsersTask);
+  yield all([
+    takeLatest(fetchUsersRequest as any, fetchUsersTask),
+    takeLatest(updateUserRequest as any, handleUpdateUser),
+    takeLatest(deleteUserRequest as any, handleDeleteUser),
+  ]);
 }
 
 export default usersWatcher;

@@ -10,6 +10,17 @@ interface UsersState {
   total: number;
   totalPages: number;
 }
+export interface UpdateUserPayload {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobileNumber: string;
+  password?: string;
+  canAccessCMS: boolean;
+  role: string;
+  serviceIds: number[];
+}
 
 const initialState: UsersState = {
   list: [],
@@ -52,9 +63,47 @@ const usersSlice = createSlice({
       state.error = action.payload;
       state.list = [];
     },
+    updateUserRequest(state, action: PayloadAction<UpdateUserPayload>) {
+      state.loading = true;
+      state.error = null;
+    },
+    updateUserSuccess(state, action: PayloadAction<User>) {
+      state.loading = false;
+      const updatedUser = action.payload;
+      const index = state.list.findIndex((user) => user.id === updatedUser.id);
+      if (index !== -1) {
+        state.list[index] = updatedUser;
+      }
+    },
+    updateUserFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    deleteUserRequest(state, action: PayloadAction<string>) {
+      state.loading = true;
+      state.error = null;
+    },
+    deleteUserSuccess(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.list = state.list.filter((user) => user.id !== action.payload);
+    },
+    deleteUserFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
   },
 });
 
-export const { fetchUsersRequest, fetchUsersSuccess, fetchUsersFailure } = usersSlice.actions;
+export const {
+  fetchUsersRequest,
+  fetchUsersSuccess,
+  fetchUsersFailure,
+  updateUserFailure,
+  updateUserRequest,
+  updateUserSuccess,
+  deleteUserFailure,
+  deleteUserRequest,
+  deleteUserSuccess,
+} = usersSlice.actions;
 
 export default usersSlice.reducer;

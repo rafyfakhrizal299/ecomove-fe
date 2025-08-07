@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { PaginationData, User } from '../types/user';
 import { UpdateUserPayload } from '../slices/users';
+import { Address } from '../types/address';
 
 const API_URL = 'https://ecomove-be-dev.vercel.app';
 
@@ -44,7 +45,7 @@ export const updateUser = async (
   }
 };
 
-export const deleteUser = async (id: number, token: string) => {
+export const deleteUser = async (id: string, token: string) => {
   try {
     const url = `${API_URL}/auth/users/${id}`;
     const response = await axios.delete(url, {
@@ -55,6 +56,21 @@ export const deleteUser = async (id: number, token: string) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting user:', error);
+    throw error;
+  }
+};
+
+export const getUserAddress = async (id: string, token: string): Promise<Address[]> => {
+  try {
+    const url = `${API_URL}/address/get-by-user/${id}`;
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.results;
+  } catch (error) {
+    console.error('Error fetching user addresses:', error);
     throw error;
   }
 };

@@ -4,6 +4,9 @@ import {
   deleteUserFailure,
   deleteUserRequest,
   deleteUserSuccess,
+  fetchUserAddressFailure,
+  fetchUserAddressRequest,
+  fetchUserAddressSuccess,
   fetchUsersFailure,
   fetchUsersRequest,
   fetchUsersSuccess,
@@ -12,10 +15,11 @@ import {
   updateUserRequest,
   updateUserSuccess,
 } from '../slices/users';
-import { deleteUser, getPaginatedUsers, updateUser } from '../services/users';
+import { deleteUser, getPaginatedUsers, getUserAddress, updateUser } from '../services/users';
 import { RootState } from '../store';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { showNotification } from '../slices/notification';
+import { Address } from '../types/address';
 
 const getToken = (state: RootState) => state.auth.token;
 
@@ -100,7 +104,7 @@ function* handleUpdateUser(action: PayloadAction<UpdateUserPayload>): Generator<
   }
 }
 
-function* handleDeleteUser(action: PayloadAction<number>): Generator<any, void, any> {
+function* handleDeleteUser(action: PayloadAction<string>): Generator<any, void, any> {
   try {
     let token: string | null = yield select(getToken);
     if (!token) {
@@ -136,11 +140,37 @@ function* handleDeleteUser(action: PayloadAction<number>): Generator<any, void, 
   }
 }
 
+function* fetchUserAddressTask(action: PayloadAction<string>): Generator<any, void, any> {
+  try {
+    let token: string | null = yield select(getToken);
+    if (!token) {
+      token = localStorage.getItem('authToken');
+    }
+
+    if (!token) {
+      const errorMessage = 'Authentication token not found. Please log in again.';
+      yield put(fetchUserAddressFailure(errorMessage));
+      yield put(showNotification({ message: errorMessage, type: 'error' }));
+      return;
+    }
+
+    const userId = action.payload;
+    const response: Address[] = yield call(getUserAddress, userId, token);
+
+    yield put(fetchUserAddressSuccess(response));
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Failed to fetch user addresses.';
+    yield put(fetchUserAddressFailure(errorMessage));
+    yield put(showNotification({ message: errorMessage, type: 'error' }));
+  }
+}
+
 function* usersWatcher() {
   yield all([
     takeLatest(fetchUsersRequest as any, fetchUsersTask),
     takeLatest(updateUserRequest as any, handleUpdateUser),
     takeLatest(deleteUserRequest as any, handleDeleteUser),
+    takeLatest(fetchUserAddressRequest as any, fetchUserAddressTask),
   ]);
 }
 

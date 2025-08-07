@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { deleteUserRequest, fetchUsersRequest } from '../../slices/users';
+import {
+  clearUserAddress,
+  deleteUserRequest,
+  fetchUserAddressRequest,
+  fetchUsersRequest,
+} from '../../slices/users';
 import Card from '../../components/common/Card';
 import {
   IoEyeOutline as _IoEyeOutline,
@@ -10,6 +15,8 @@ import {
 } from 'react-icons/io5';
 import { User } from '../../types/user';
 import EditUserModal from './editUser';
+import UserDetailModal from './userDetailModal';
+import ConfirmModal from '../../components/common/ConfirmModal';
 
 const IoEyeOutline = _IoEyeOutline as React.ComponentType<{ className?: string }>;
 const IoPencilOutline = _IoPencilOutline as React.ComponentType<{ className?: string }>;
@@ -17,13 +24,36 @@ const IoTrashOutline = _IoTrashOutline as React.ComponentType<{ className?: stri
 
 const UserManagement: React.FC = () => {
   const dispatch = useDispatch();
-  const { list, loading, error, page, totalPages } = useSelector((state: RootState) => state.users);
+  const {
+    list,
+    loading,
+    error,
+    page,
+    totalPages,
+    userAddress,
+    userAddressLoading,
+    userAddressError,
+  } = useSelector((state: RootState) => state.users);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [selectedUserIdForAddress, setSelectedUserIdForAddress] = useState<string | null>(null);
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [userToDeleteId, setUserToDeleteId] = useState<string | null>(null);
 
   // State untuk pencarian
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+
+  // Perbaikan: Pindahkan dispatch ke dalam handler
+  const handleViewAddressClick = (userId: string) => {
+    setSelectedUserIdForAddress(userId);
+    setIsAddressModalOpen(true);
+    // Langsung dispatch action di sini
+    dispatch(fetchUserAddressRequest(userId));
+  };
 
   const handleEditClick = (user: User) => {
     setSelectedUser(user);
@@ -33,27 +63,30 @@ const UserManagement: React.FC = () => {
   // Handler untuk menutup modal
   const handleCloseModal = () => {
     setIsEditModalOpen(false);
+    setIsAddressModalOpen(false);
+    setIsConfirmModalOpen(false);
     setSelectedUser(null);
+    setSelectedUserIdForAddress(null);
+    setUserToDeleteId(null);
+    // Hapus alamat saat modal ditutup
+    dispatch(clearUserAddress());
   };
 
-  const handleDeleteUser = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      dispatch(deleteUserRequest(id));
+  const handleDeleteClick = (id: string) => {
+    setUserToDeleteId(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (userToDeleteId) {
+      dispatch(deleteUserRequest(userToDeleteId));
     }
+    handleCloseModal();
   };
 
   useEffect(() => {
-    // Memuat pengguna saat komponen dimuat, jika daftar kosong
-    if (list.length === 0) {
-      dispatch(fetchUsersRequest({ page: 1, limit: 10 }));
-    }
-  }, [dispatch, list.length]);
-
-  useEffect(() => {
-    if (list.length === 0) {
-      dispatch(fetchUsersRequest({ page: 1, limit: 10 }));
-    }
-  }, [dispatch, list.length]);
+    dispatch(fetchUsersRequest({ page: 1, limit: 10 }));
+  }, [dispatch]);
 
   useEffect(() => {
     const filtered = list.filter(
@@ -73,8 +106,10 @@ const UserManagement: React.FC = () => {
   };
 
   const itemsPerPage = 10;
-  const indexOfFirstItem = page * itemsPerPage;
-  const indexOfLastItem = indexOfFirstItem + filteredUsers.length;
+  const totalItems = searchQuery.length > 0 ? filteredUsers.length : list.length;
+  const currentItems = searchQuery.length > 0 ? filteredUsers : list;
+  const displayItemsCount = Math.min((page + 1) * itemsPerPage, totalItems);
+  const startItemIndex = page * itemsPerPage;
 
   return (
     <div className="py-6 sm:px-6 lg:px-8">
@@ -91,7 +126,7 @@ const UserManagement: React.FC = () => {
           />
         </div>
 
-        {loading && <p className="text-center text-gray-500">Memuat data pengguna...</p>}
+        {loading && <p className="text-center text-gray-500">Loading Data User...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
 
         {!loading && !error && (
@@ -103,7 +138,7 @@ const UserManagement: React.FC = () => {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
                   >
-                    Nama
+                    Name
                   </th>
                   <th
                     scope="col"
@@ -129,8 +164,8 @@ const UserManagement: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
+                {currentItems.length > 0 ? (
+                  currentItems.map((user) => (
                     <tr
                       key={user.id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
@@ -161,9 +196,12 @@ const UserManagement: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
-                          {/* <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-600">
+                          <button
+                            onClick={() => handleViewAddressClick(user.id)}
+                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-600"
+                          >
                             <IoEyeOutline className="w-5 h-5" />
-                          </button> */}
+                          </button>
                           <button
                             onClick={() => handleEditClick(user)}
                             className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-600"
@@ -171,7 +209,7 @@ const UserManagement: React.FC = () => {
                             <IoPencilOutline className="w-5 h-5" />
                           </button>
                           <button
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => handleDeleteClick(user.id)}
                             className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600"
                           >
                             <IoTrashOutline className="w-5 h-5" />
@@ -199,8 +237,7 @@ const UserManagement: React.FC = () => {
         {!loading && !error && (
           <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6 mt-4">
             <div className="text-sm text-gray-700 dark:text-gray-400">
-              Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUsers.length)} of{' '}
-              {filteredUsers.length} entries
+              Showing {startItemIndex + 1} to {displayItemsCount} of {totalItems} entries
             </div>
             <div>
               <nav
@@ -243,6 +280,24 @@ const UserManagement: React.FC = () => {
       </Card>
       {selectedUser && (
         <EditUserModal isOpen={isEditModalOpen} onClose={handleCloseModal} user={selectedUser} />
+      )}
+      {isConfirmModalOpen && (
+        <ConfirmModal
+          isOpen={isConfirmModalOpen}
+          onClose={handleCloseModal}
+          onConfirm={handleConfirmDelete}
+          title="Confirm Delete"
+          message="Are u sure you want to delete this user? This action cannot be undone."
+        />
+      )}
+      {isAddressModalOpen && (
+        <UserDetailModal
+          isOpen={isAddressModalOpen}
+          onClose={handleCloseModal}
+          address={userAddress}
+          isLoading={userAddressLoading}
+          error={userAddressError}
+        />
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User, UserListResponse } from '../types/user';
+import { Address } from '../types/address';
 
 interface UsersState {
   list: User[];
@@ -9,6 +10,9 @@ interface UsersState {
   limit: number;
   total: number;
   totalPages: number;
+  userAddress: Address[] | null; // State baru untuk menyimpan alamat
+  userAddressLoading: boolean; // State baru untuk loading alamat
+  userAddressError: string | null;
 }
 export interface UpdateUserPayload {
   id: string;
@@ -30,6 +34,9 @@ const initialState: UsersState = {
   limit: 10,
   total: 0,
   totalPages: 0,
+  userAddress: null,
+  userAddressLoading: false,
+  userAddressError: null,
 };
 
 const usersSlice = createSlice({
@@ -91,6 +98,31 @@ const usersSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    fetchUserAddressRequest: (state, action: PayloadAction<string>) => {
+      // Menambahkan penanganan jika payload tidak valid
+      if (!action.payload) {
+        state.userAddressLoading = false;
+        state.userAddressError = 'Invalid user ID provided.';
+        return;
+      }
+      state.userAddressLoading = true;
+      state.userAddressError = null;
+      state.userAddress = null;
+    },
+    fetchUserAddressSuccess: (state, action: PayloadAction<Address[]>) => {
+      state.userAddressLoading = false;
+      state.userAddress = action.payload;
+      state.userAddressError = null;
+    },
+    fetchUserAddressFailure: (state, action: PayloadAction<string>) => {
+      state.userAddressLoading = false;
+      state.userAddressError = action.payload;
+    },
+    clearUserAddress: (state) => {
+      state.userAddress = null;
+      state.userAddressError = null;
+      state.userAddressLoading = false;
+    },
   },
 });
 
@@ -104,6 +136,10 @@ export const {
   deleteUserFailure,
   deleteUserRequest,
   deleteUserSuccess,
+  fetchUserAddressRequest,
+  fetchUserAddressSuccess,
+  fetchUserAddressFailure,
+  clearUserAddress,
 } = usersSlice.actions;
 
 export default usersSlice.reducer;

@@ -130,35 +130,35 @@ const UserManagement: React.FC = () => {
         {error && <p className="text-center text-red-500">{error}</p>}
 
         {!loading && !error && (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-lg shadow">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-600">
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap"
                   >
                     Name
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap"
                   >
                     Email
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap"
                   >
                     Role
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap"
                   >
                     CMS Access
                   </th>
-                  <th scope="col" className="relative px-6 py-3">
+                  <th scope="col" className="relative px-6 py-3 whitespace-nowrap">
                     <span className="sr-only">Actions</span>
                   </th>
                 </tr>
@@ -170,13 +170,13 @@ const UserManagement: React.FC = () => {
                       key={user.id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
                         {user.firstName} {user.lastName}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300 whitespace-nowrap">
                         {user.email}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300 whitespace-nowrap">
                         <span
                           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                             user.role === 'ADMIN'
@@ -187,14 +187,14 @@ const UserManagement: React.FC = () => {
                           {user.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300 whitespace-nowrap">
                         {user.canAccessCMS ? (
                           <span className="text-green-500">Yes</span>
                         ) : (
                           <span className="text-red-500">No</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                         <div className="flex items-center justify-end space-x-2">
                           <button
                             onClick={() => handleViewAddressClick(user.id)}

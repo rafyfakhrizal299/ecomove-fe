@@ -3,9 +3,13 @@ import {
   fetchTransactionsFailure,
   fetchTransactionsRequest,
   fetchTransactionsSuccess,
+  updateTransactionFailure,
+  updateTransactionSuccess,
 } from '../slices/transactionSlice';
-import { fetchTransactionsApi } from '../services/transactionService';
+import { fetchTransactionsApi, updateTransactionApi } from '../services/transactionService';
 import { SagaIterator } from 'redux-saga';
+import { PayloadAction } from '@reduxjs/toolkit';
+import { Transaction } from '../types/transactionType';
 
 function* fetchTransactionsSaga(action: ReturnType<typeof fetchTransactionsRequest>): SagaIterator {
   try {
@@ -21,6 +25,18 @@ function* fetchTransactionsSaga(action: ReturnType<typeof fetchTransactionsReque
     );
   } catch (error: any) {
     yield put(fetchTransactionsFailure(error.message));
+  }
+}
+
+function* updateTransactionSaga(
+  action: PayloadAction<{ id: number; changes: Partial<Transaction> }>,
+) {
+  try {
+    const { id, changes } = action.payload;
+    const updated: Transaction = yield call(updateTransactionApi, id, changes);
+    yield put(updateTransactionSuccess(updated));
+  } catch (error: any) {
+    yield put(updateTransactionFailure(error.message));
   }
 }
 

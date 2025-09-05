@@ -44,10 +44,29 @@ const transactionSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    updateTransactionRequest(
+      _state,
+      _action: PayloadAction<{ id: number; changes: Partial<Transaction> }>,
+    ) {},
+    updateTransactionSuccess(state, action: PayloadAction<Transaction>) {
+      const index = state.data.findIndex((t) => t.id === action.payload.id);
+      if (index !== -1) {
+        state.data[index] = action.payload;
+      }
+    },
+    updateTransactionFailure(state, action: PayloadAction<string>) {
+      state.error = action.payload;
+    },
   },
 });
 
-export const { fetchTransactionsRequest, fetchTransactionsSuccess, fetchTransactionsFailure } =
-  transactionSlice.actions;
+export const {
+  fetchTransactionsRequest,
+  fetchTransactionsSuccess,
+  fetchTransactionsFailure,
+  updateTransactionRequest,
+  updateTransactionSuccess,
+  updateTransactionFailure,
+} = transactionSlice.actions;
 
 export default transactionSlice.reducer;

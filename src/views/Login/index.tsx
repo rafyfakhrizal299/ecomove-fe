@@ -22,12 +22,6 @@ const LoginPage: React.FC = () => {
 
   const { isAuthenticated, loading, error } = useSelector((state: RootState) => state.auth);
 
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     navigate('/home', { replace: true });
-  //   }
-  // }, [isAuthenticated, navigate]);
-
   useEffect(() => {
     const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
@@ -112,15 +106,12 @@ const LoginPage: React.FC = () => {
               </label>
               <a href="#" className="text-green-600 hover:underline">
                 Forgot password?
-              </a>{' '}
+              </a>
             </div>
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-            {/* Tombol submit harus berada di dalam form atau memiliki type="submit" */}
-            {/* Hapus onClick={handleSubmit} dari sini */}
             <button
-              type="submit" // Pastikan type="submit" ada
-              // onClick={handleSubmit}
+              type="submit"
               className="w-full bg-[#5e9142] text-white py-4 px-8 rounded-full font-bold text-lg hover:bg-[#4e7a36] focus:outline-none focus:ring-2 focus:ring-[#5e9142] focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200"
               disabled={loading}
             >
@@ -128,9 +119,6 @@ const LoginPage: React.FC = () => {
             </button>
           </form>
         </div>
-
-        {/* Bagian ini tidak diperlukan jika tombol submit sudah di dalam form */}
-        {/* <div className="mt-auto space-y-2"></div> */}
       </div>
     </div>
   );

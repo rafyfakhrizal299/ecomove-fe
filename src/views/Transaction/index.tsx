@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Card from '../../components/common/Card';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/mainStore';
-import { fetchTransactionsRequest } from '../../slices/transactionSlice';
+import { fetchTransactionsRequest, updateTransactionRequest } from '../../slices/transactionSlice';
 
 const Transaction: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -28,14 +28,18 @@ const Transaction: React.FC = () => {
   const paginate = (newPage: number) => {
     dispatch(fetchTransactionsRequest({ page: newPage, pageSize, search: searchQuery }));
   };
-  //   setTransactions((prevTransactions) =>
-  //     prevTransactions.map((transaction) =>
-  //       transaction.booking === bookingId
-  //         ? { ...transaction, driver: e.target.value }
-  //         : transaction,
-  //     ),
-  //   );
-  // };
+
+  const handleStatusChange = (id: number, status: string) => {
+    dispatch(updateTransactionRequest({ id, changes: { paymentStatus: status } }));
+  };
+
+  const handleDriverChange = (id: number, driverId: string) => {
+    dispatch(updateTransactionRequest({ id, changes: { driverId } }));
+  };
+
+  const handleNotesBlur = (id: number, notes: string) => {
+    dispatch(updateTransactionRequest({ id, changes: { deliveryNotes: notes } }));
+  };
 
   return (
     <div className="py-6 sm:px-6 lg:px-8">

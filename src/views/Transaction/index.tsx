@@ -2,7 +2,20 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Card from '../../components/common/Card';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/mainStore';
-import { fetchTransactionsRequest, updateTransactionRequest } from '../../slices/transactionSlice';
+import { fetchDriversRequest, fetchTransactionsRequest, updateTransactionRequest } from '../../slices/transactionSlice';
+
+const statusOptions = [
+  'Booked',
+  'Booking Confirmed',
+  'Out for pick up',
+  'Picked up',
+  'Sort at hub',
+  'Out for delivery',
+  'Delivery',
+  'First Delivery Attempt Failed',
+  'Second Delivery Attempt Failed',
+  'Returned to Sender',
+];
 
 const Transaction: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -12,12 +25,15 @@ const Transaction: React.FC = () => {
     page,
     pageSize,
     loading,
+    drivers = [],
   } = useSelector((state: RootState) => state.transaction);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [notesDraft, setNotesDraft] = useState<{ [id: number]: string }>({});
 
   useEffect(() => {
     dispatch(fetchTransactionsRequest({ page: 1, pageSize: 5, search: '' }));
+    dispatch(fetchDriversRequest());
   }, [dispatch]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,15 +46,21 @@ const Transaction: React.FC = () => {
   };
 
   const handleStatusChange = (id: number, status: string) => {
-    dispatch(updateTransactionRequest({ id, changes: { paymentStatus: status } }));
+    dispatch(updateTransactionRequest({ id, updates: { status } }));
   };
 
   const handleDriverChange = (id: number, driverId: string) => {
-    dispatch(updateTransactionRequest({ id, changes: { driverId } }));
+    dispatch(updateTransactionRequest({ id, updates: { driverId } }));
   };
 
-  const handleNotesBlur = (id: number, notes: string) => {
-    dispatch(updateTransactionRequest({ id, changes: { deliveryNotes: notes } }));
+  const handleNotesChange = (id: number, value: string) => {
+    setNotesDraft((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleNotesSave = (id: number) => {
+    if (notesDraft[id] !== undefined) {
+      dispatch(updateTransactionRequest({ id, updates: { deliveryNotes: notesDraft[id] } }));
+    }
   };
 
   return (
@@ -77,9 +99,6 @@ const Transaction: React.FC = () => {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                      Payment
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
                       Driver
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
@@ -105,14 +124,33 @@ const Transaction: React.FC = () => {
                             ? new Date(transaction.createdAt).toLocaleString()
                             : '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {transaction.paymentStatus}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          <select
+                            value={transaction.status}
+                            onChange={(e) => handleStatusChange(transaction.id, e.target.value)}
+                            className="border rounded-md px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
+                          >
+                            {statusOptions.map((s) => (
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                          </select>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {transaction.totalFee}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {transaction.driverId ?? 'Unassigned'}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          <select
+                            value={transaction.driverId ?? ''}
+                            onChange={(e) => handleDriverChange(transaction.id, e.target.value)}
+                            className="px-2 py-1 border rounded-md dark:bg-gray-700 dark:text-white"
+                          >
+                            <option value="">Unassigned</option>
+                            {Array.isArray(drivers) &&
+                              drivers.map((driver) => (
+                                <option key={driver.id} value={driver.id}>
+                                  {driver.name}
+                                </option>
+                              ))}
+                          </select>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                           {transaction.paymentStatus}
@@ -120,8 +158,22 @@ const Transaction: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                           {transaction.modeOfPayment}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {transaction.deliveryNotes ?? '-'}
+                        <td className="px-6 py-4 text-sm text-gray-900 dark:text-white min-w-[250px] w-[300px]">
+                          <textarea
+                            rows={3}
+                            value={notesDraft[transaction.id] ?? transaction.deliveryNotes ?? ''}
+                            placeholder="Add Notes here..."
+                            className="px-3 py-2 border rounded-lg w-full resize-none shadow-sm text-sm
+                                      dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            onChange={(e) => handleNotesChange(transaction.id, e.target.value)}
+                            onBlur={() => handleNotesSave(transaction.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleNotesSave(transaction.id);
+                              }
+                            }}
+                          />
                         </td>
                       </tr>
                     ))

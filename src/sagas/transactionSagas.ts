@@ -1,15 +1,19 @@
-import { call, put, takeLatest } from 'redux-saga/effects';
+import { all, call, put, takeLatest } from 'redux-saga/effects';
 import {
+  fetchDriversFailure,
+  fetchDriversRequest,
+  fetchDriversSuccess,
   fetchTransactionsFailure,
   fetchTransactionsRequest,
   fetchTransactionsSuccess,
   updateTransactionFailure,
+  updateTransactionRequest,
   updateTransactionSuccess,
 } from '../slices/transactionSlice';
-import { fetchTransactionsApi, updateTransactionApi } from '../services/transactionService';
+import { fetchDriversApi, fetchTransactionsApi, updateTransactionApi } from '../services/transactionService';
 import { SagaIterator } from 'redux-saga';
 import { PayloadAction } from '@reduxjs/toolkit';
-import { Transaction } from '../types/transactionType';
+import { Driver, Transaction } from '../types/transactionType';
 
 function* fetchTransactionsSaga(action: ReturnType<typeof fetchTransactionsRequest>): SagaIterator {
   try {
@@ -28,18 +32,29 @@ function* fetchTransactionsSaga(action: ReturnType<typeof fetchTransactionsReque
   }
 }
 
-function* updateTransactionSaga(
-  action: PayloadAction<{ id: number; changes: Partial<Transaction> }>,
-) {
+function* updateTransactionSaga(action: ReturnType<typeof updateTransactionRequest>) {
   try {
-    const { id, changes } = action.payload;
-    const updated: Transaction = yield call(updateTransactionApi, id, changes);
-    yield put(updateTransactionSuccess(updated));
-  } catch (error: any) {
-    yield put(updateTransactionFailure(error.message));
+    const { id, updates } = action.payload;
+    const updated: Transaction = yield call(updateTransactionApi, id, updates);
+    yield put(updateTransactionSuccess({ id, updates }));
+  } catch (e: any) {
+    yield put(updateTransactionFailure(e.message));
   }
 }
 
-export function* transactionSaga(): SagaIterator {
-  yield takeLatest(fetchTransactionsRequest.type, fetchTransactionsSaga);
+function* fetchDriversSaga() {
+  try {
+    const drivers: Driver[] = yield call(fetchDriversApi);
+    yield put(fetchDriversSuccess(drivers));
+  } catch (error: any) {
+    yield put(fetchDriversFailure(error.message));
+  }
+}
+
+export function* transactionSaga() {
+  yield all([
+    takeLatest(fetchTransactionsRequest.type, fetchTransactionsSaga),
+    takeLatest(updateTransactionRequest.type, updateTransactionSaga),
+    takeLatest(fetchDriversRequest.type, fetchDriversSaga),
+  ]);
 }

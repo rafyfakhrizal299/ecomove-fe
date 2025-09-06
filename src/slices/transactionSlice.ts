@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Transaction } from '../types/transactionType';
+import { Driver, Transaction } from '../types/transactionType';
 
 interface TransactionState {
   data: Transaction[];
@@ -8,6 +8,7 @@ interface TransactionState {
   pageSize: number;
   loading: boolean;
   error: string | null;
+  drivers: Driver[];
 }
 
 const initialState: TransactionState = {
@@ -17,6 +18,7 @@ const initialState: TransactionState = {
   pageSize: 10,
   loading: false,
   error: null,
+  drivers: [],
 };
 
 const transactionSlice = createSlice({
@@ -44,17 +46,32 @@ const transactionSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    updateTransactionRequest(
-      _state,
-      _action: PayloadAction<{ id: number; changes: Partial<Transaction> }>,
-    ) {},
-    updateTransactionSuccess(state, action: PayloadAction<Transaction>) {
-      const index = state.data.findIndex((t) => t.id === action.payload.id);
-      if (index !== -1) {
-        state.data[index] = action.payload;
-      }
+    fetchDriversRequest(state) {
+      state.loading = true;
+      state.error = null;
     },
+    fetchDriversSuccess(state, action: PayloadAction<Driver[]>) {
+      state.loading = false;
+      state.drivers = action.payload;
+    },
+    fetchDriversFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    updateTransactionRequest: (
+      state,
+      _action: PayloadAction<{ id: number; updates: Partial<Transaction> }>
+    ) => {},
+    updateTransactionSuccess: (state, action: PayloadAction<{ id: number; updates: Partial<Transaction> }>) => {
+        const { id, updates } = action.payload;
+        const index = state.data.findIndex((t) => t.id === id);
+        if (index !== -1) {
+          state.data[index] = { ...state.data[index], ...updates };
+        }
+        state.loading = false;
+      },
     updateTransactionFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
       state.error = action.payload;
     },
   },
@@ -67,6 +84,9 @@ export const {
   updateTransactionRequest,
   updateTransactionSuccess,
   updateTransactionFailure,
+  fetchDriversRequest,
+  fetchDriversSuccess,
+  fetchDriversFailure,
 } = transactionSlice.actions;
 
 export default transactionSlice.reducer;

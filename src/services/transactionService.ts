@@ -26,3 +26,11 @@ export const fetchDriversApi = async (): Promise<Driver[]> => {
   const response = await axios.get(`${API_URL}/driver`);
   return Array.isArray(response.data) ? response.data : response.data.data;
 };
+
+export const createDriverApi = async (
+  driver: { name: string; licenseNumber: string; phoneNumber: string }
+): Promise<Driver> => {
+  const response = await axios.post(`${API_URL}/driver`, driver);
+  return response.data as Driver;
+};
+

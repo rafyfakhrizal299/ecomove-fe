@@ -62,15 +62,47 @@ const transactionSlice = createSlice({
       state,
       _action: PayloadAction<{ id: number; updates: Partial<Transaction> }>
     ) => {},
-    updateTransactionSuccess: (state, action: PayloadAction<{ id: number; updates: Partial<Transaction> }>) => {
-        const { id, updates } = action.payload;
-        const index = state.data.findIndex((t) => t.id === id);
-        if (index !== -1) {
-          state.data[index] = { ...state.data[index], ...updates };
+    updateTransactionSuccess: (
+      state,
+      action: PayloadAction<{ id: number; updates: Partial<Transaction> }>
+    ) => {
+      const { id, updates } = action.payload;
+      const index = state.data.findIndex((t) => t.id === id);
+
+      if (index !== -1) {
+        const updatedTransaction = {
+          ...state.data[index],
+          ...updates,
+        };
+
+        // kalau driverId diupdate, inject juga object driver dari state.drivers
+        if (updates.driverId) {
+          const driverObj = state.drivers.find((d) => d.id === updates.driverId);
+          if (driverObj) {
+            updatedTransaction.driver = driverObj;
+          }
         }
-        state.loading = false;
-      },
+
+        state.data[index] = updatedTransaction;
+      }
+
+      state.loading = false;
+    },
     updateTransactionFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    createDriverRequest: (
+      state,
+      _action: PayloadAction<{ name: string; licenseNumber: string; phoneNumber: string }>
+    ) => {
+      state.loading = true;
+    },
+    createDriverSuccess: (state, action: PayloadAction<Driver>) => {
+      state.loading = false;
+      state.drivers.push(action.payload); // langsung push aja
+    },
+    createDriverFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },
@@ -87,6 +119,9 @@ export const {
   fetchDriversRequest,
   fetchDriversSuccess,
   fetchDriversFailure,
+  createDriverRequest,
+  createDriverSuccess,
+  createDriverFailure,
 } = transactionSlice.actions;
 
 export default transactionSlice.reducer;

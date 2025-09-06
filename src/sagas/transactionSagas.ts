@@ -1,5 +1,8 @@
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import {
+  createDriverFailure,
+  createDriverRequest,
+  createDriverSuccess,
   fetchDriversFailure,
   fetchDriversRequest,
   fetchDriversSuccess,
@@ -10,7 +13,12 @@ import {
   updateTransactionRequest,
   updateTransactionSuccess,
 } from '../slices/transactionSlice';
-import { fetchDriversApi, fetchTransactionsApi, updateTransactionApi } from '../services/transactionService';
+import {
+  createDriverApi,
+  fetchDriversApi,
+  fetchTransactionsApi,
+  updateTransactionApi,
+} from '../services/transactionService';
 import { SagaIterator } from 'redux-saga';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { Driver, Transaction } from '../types/transactionType';
@@ -51,10 +59,48 @@ function* fetchDriversSaga() {
   }
 }
 
+export function* createDriverSaga(
+  action: ReturnType<typeof createDriverRequest>
+): Generator<any, void, any> {
+  try {
+    const apiResult: { id: string } = yield call(createDriverApi, {
+      name: action.payload.name,
+      licenseNumber: action.payload.licenseNumber,
+      phoneNumber: action.payload.phoneNumber,
+    });
+
+    const newDriver: Driver = {
+      id: apiResult.id,
+      name: action.payload.name,
+      licenseNumber: action.payload.licenseNumber,
+      phoneNumber: action.payload.phoneNumber,
+      email: "",
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    yield put(createDriverSuccess(newDriver));
+
+    if ((action.payload as any).transactionId) {
+      yield put(
+        updateTransactionRequest({
+          id: (action.payload as any).transactionId,
+          updates: { driverId: newDriver.id },
+        })
+      );
+    }
+  } catch (error: any) {
+    yield put(createDriverFailure(error.message));
+  }
+}
+
+
 export function* transactionSaga() {
   yield all([
     takeLatest(fetchTransactionsRequest.type, fetchTransactionsSaga),
     takeLatest(updateTransactionRequest.type, updateTransactionSaga),
     takeLatest(fetchDriversRequest.type, fetchDriversSaga),
+    takeLatest('transaction/createDriverRequest', createDriverSaga),
   ]);
 }

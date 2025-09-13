@@ -98,6 +98,12 @@ const Transaction: React.FC = () => {
             value={searchQuery}
             onChange={handleSearchChange}
           />
+          <button
+            // onClick={downloadReport}
+            className="ml-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+          >
+            Download Report
+          </button>
         </div>
 
         {loading ? (

@@ -15,7 +15,7 @@ const AuthGuard: React.FC = () => {
   const navigate = useNavigate();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Memuat...</div>;
   }
 
   if (!isAuthenticated && !['/login', '/signup'].includes(location.pathname)) {

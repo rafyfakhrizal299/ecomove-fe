@@ -7,6 +7,7 @@ import Layout from './components/common/Layout';
 
 import 'assets/css/main.css';
 import { logout, rehydrate } from './slices/auth';
+import Notification from './components/common/Notification';
 
 const store = createStore();
 
@@ -25,13 +26,15 @@ function App() {
     if (token) {
       dispatch(rehydrate(token));
     } else {
-      dispatch(logout()); // <-- TAMBAHKAN INI
+      dispatch(logout());
     }
-  }, [dispatch]);
+  }, []);
 
   return (
-    // Hanya RouterProvider, tidak ada Provider Redux di sini
-    <RouterProvider router={appRouter} />
+    <>
+      <RouterProvider router={appRouter} />
+      <Notification />
+    </>
   );
 }
 

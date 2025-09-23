@@ -16,9 +16,9 @@ function* handleLoginRequest(
     if (token && userEmail) {
       localStorage.setItem('authToken', token);
       yield put(loginSuccess({ email: userEmail, token: token }));
-      yield put(fetchUsersRequest({ page: 1, limit: 10 })); // <--- TAMBAHKAN BARIS INI
+      yield put(fetchUsersRequest({ page: 1, limit: 10 }));
     } else {
-      throw new Error('Token atau email tidak ditemukan dalam respons API.');
+      throw new Error('Token or email not found in this process respons API.');
     }
   } catch (error: any) {
     yield put(loginFailure(error.message));

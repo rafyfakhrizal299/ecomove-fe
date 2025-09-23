@@ -1,163 +1,95 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../../components/common/Card';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../store/mainStore';
+import {
+  createDriverRequest,
+  createDriverSuccess,
+  fetchDriversRequest,
+  fetchTransactionsRequest,
+  updateTransactionRequest,
+} from '../../slices/transactionSlice';
+import AsyncCreatableSelect from 'react-select/async-creatable';
+import { SingleValue } from 'react-select';
 
-// Define the interface for a single transaction
-interface TransactionData {
-  booking: string;
-  dateAndTime: string;
-  status: 'Pending' | 'Scheduled' | 'Delivered';
-  payment: string; // Assuming '150 PHP' is a string
-  driver: string;
-  statusOfPayment: 'Paid' | 'Automatic if payment portal';
-  modeOfPayment: 'Bank' | 'Cash' | 'GCash' | 'Card';
-  notes: string;
-}
+const statusOptions = [
+  'Booked',
+  'Booking Confirmed',
+  'Out for pick up',
+  'Picked up',
+  'Sort at hub',
+  'Out for delivery',
+  'Delivered',
+  'drop off location 1  Delivery Attempt Failed',
+  'drop off location 2 Delivery Attempt Failed',
+  'Returned to Sender',
+];
 
 const Transaction: React.FC = () => {
-  // Dummy data for demonstration purposes
-  const [transactions, setTransactions] = useState<TransactionData[]>([
-    {
-      booking: 'Rafy 1',
-      dateAndTime: 'Today',
-      status: 'Delivered',
-      payment: '150 PHP',
-      driver: 'Juan Reyes',
-      statusOfPayment: 'Paid',
-      modeOfPayment: 'Bank',
-      notes: 'Write Here',
-    },
-    {
-      booking: 'Rafy 2',
-      dateAndTime: 'Today',
-      status: 'Pending',
-      payment: '200 PHP',
-      driver: 'Jose Dela Cruz',
-      statusOfPayment: 'Paid',
-      modeOfPayment: 'Cash',
-      notes: 'Write Here',
-    },
-    {
-      booking: 'Rafy 3',
-      dateAndTime: 'Today',
-      status: 'Pending',
-      payment: '500 PHP',
-      driver: 'Jose Dela Cruz',
-      statusOfPayment: 'Paid',
-      modeOfPayment: 'GCash',
-      notes: 'Write Here',
-    },
-    // Add more dummy data to test pagination and search
-    {
-      booking: 'Rafy 4',
-      dateAndTime: 'Yesterday',
-      status: 'Scheduled',
-      payment: '100 PHP',
-      driver: 'Maria Santos',
-      statusOfPayment: 'Automatic if payment portal',
-      modeOfPayment: 'Card',
-      notes: 'Another note',
-    },
-    {
-      booking: 'Rafy 5',
-      dateAndTime: '2 Days Ago',
-      status: 'Delivered',
-      payment: '300 PHP',
-      driver: 'Juan Reyes',
-      statusOfPayment: 'Paid',
-      modeOfPayment: 'Bank',
-      notes: 'Successfully delivered',
-    },
-    {
-      booking: 'Booking A',
-      dateAndTime: 'Today',
-      status: 'Pending',
-      payment: '75 PHP',
-      driver: 'Jose Dela Cruz',
-      statusOfPayment: 'Paid',
-      modeOfPayment: 'Cash',
-      notes: 'Urgent',
-    },
-    {
-      booking: 'Booking B',
-      dateAndTime: 'Tomorrow',
-      status: 'Scheduled',
-      payment: '180 PHP',
-      driver: 'Maria Santos',
-      statusOfPayment: 'Automatic if payment portal',
-      modeOfPayment: 'GCash',
-      notes: 'Morning delivery',
-    },
-    {
-      booking: 'Rafy 6',
-      dateAndTime: 'Last Week',
-      status: 'Delivered',
-      payment: '450 PHP',
-      driver: 'Juan Reyes',
-      statusOfPayment: 'Paid',
-      modeOfPayment: 'Card',
-      notes: 'Customer satisfied',
-    },
-  ]);
+  const dispatch = useDispatch<AppDispatch>();
+  const {
+    data: transactions,
+    total,
+    page,
+    pageSize,
+    loading,
+    drivers = [],
+  } = useSelector((state: RootState) => state.transaction);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5); // You can adjust this
-
-  // Search state
   const [searchQuery, setSearchQuery] = useState('');
+  const [notesDraft, setNotesDraft] = useState<{ [id: number]: string }>({});
+  const [newDriver, setNewDriver] = useState<{ name: string; transactionId: number } | null>(null);
+  const isSidebarOpen = useSelector((state: RootState) => state.ui.isSidebarOpen);
 
-  // Filtered and paginated data
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((transaction) =>
-      Object.values(transaction).some((value) =>
-        String(value).toLowerCase().includes(searchQuery.toLowerCase()),
-      ),
-    );
-  }, [transactions, searchQuery]);
+  useEffect(() => {
+    dispatch(fetchTransactionsRequest({ page: 1, pageSize: 5, search: '' }));
+    dispatch(fetchDriversRequest());
+  }, [dispatch]);
 
-  // Calculate pagination values
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
+  useEffect(() => {
+    if (newDriver) {
+      const created = drivers.find((d) => d.name?.toLowerCase() === newDriver.name.toLowerCase());
+      if (created) {
+        dispatch(
+          updateTransactionRequest({
+            id: newDriver.transactionId,
+            updates: { driverId: created.id },
+          }),
+        );
+        setNewDriver(null); // reset biar gak infinite loop
+      }
+    }
+  }, [drivers, newDriver, dispatch]);
 
-  // Handle page change
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
-  // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setCurrentPage(1); // Reset to first page on new search
+    dispatch(fetchTransactionsRequest({ page: 1, pageSize, search: e.target.value }));
   };
 
-  // Handle dropdown changes (example for Status, you'd replicate for Driver)
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>, bookingId: string) => {
-    setTransactions((prevTransactions) =>
-      prevTransactions.map((transaction) =>
-        transaction.booking === bookingId
-          ? { ...transaction, status: e.target.value as 'Pending' | 'Scheduled' | 'Delivered' }
-          : transaction,
-      ),
-    );
+  const paginate = (newPage: number) => {
+    dispatch(fetchTransactionsRequest({ page: newPage, pageSize, search: searchQuery }));
   };
 
-  const handleDriverChange = (e: React.ChangeEvent<HTMLSelectElement>, bookingId: string) => {
-    setTransactions((prevTransactions) =>
-      prevTransactions.map((transaction) =>
-        transaction.booking === bookingId
-          ? { ...transaction, driver: e.target.value }
-          : transaction,
-      ),
-    );
+  const handleStatusChange = (id: number, status: string) => {
+    dispatch(updateTransactionRequest({ id, updates: { status } }));
+  };
+
+  const handleNotesChange = (id: number, value: string) => {
+    setNotesDraft((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleNotesSave = (id: number) => {
+    if (notesDraft[id] !== undefined) {
+      dispatch(updateTransactionRequest({ id, updates: { deliveryNotes: notesDraft[id] } }));
+    }
   };
 
   return (
-    <div className="py-6 sm:px-6 lg:px-8">
+    <div className="py-6 sm:px-6 lg:px-8 w-full max-w-full overflow-x-hidden">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
         Admin Transaction Management
       </h1>
-      <Card className="p-5 mb-6 col-span-full">
-        {/* Search Input */}
+      <Card className="p-5 mb-6 w-full">
         <div className="mb-6 flex justify-end">
           <input
             type="text"
@@ -166,177 +98,230 @@ const Transaction: React.FC = () => {
             value={searchQuery}
             onChange={handleSearchChange}
           />
-        </div>
-
-        {/* Transaction Table */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-600">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
-                >
-                  Booking
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
-                >
-                  Date and Time
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
-                >
-                  Status
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
-                >
-                  Payment
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
-                >
-                  Driver
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
-                >
-                  Payment Status
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
-                >
-                  Payment Method
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
-                >
-                  Notes
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-              {currentItems.length > 0 ? (
-                currentItems.map((transaction) => (
-                  <tr key={transaction.booking}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {transaction.booking}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {transaction.dateAndTime}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      <select
-                        className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        value={transaction.status}
-                        onChange={(e) => handleStatusChange(e, transaction.booking)}
-                      >
-                        <option value="Pending">Pending</option>
-                        <option value="Scheduled">Scheduled</option>
-                        <option value="Delivered">Delivered</option>
-                      </select>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {transaction.payment}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      <select
-                        className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        value={transaction.driver}
-                        onChange={(e) => handleDriverChange(e, transaction.booking)}
-                      >
-                        <option value="Jose Dela Cruz">Jose Dela Cruz</option>
-                        <option value="Maria Santos">Maria Santos</option>
-                        <option value="Juan Reyes">Juan Reyes</option>
-                        {/* Add more drivers as needed */}
-                      </select>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {transaction.statusOfPayment}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {transaction.modeOfPayment}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      <input
-                        type="text"
-                        className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        value={transaction.notes}
-                        onChange={(e) => {
-                          setTransactions((prev) =>
-                            prev.map((t) =>
-                              t.booking === transaction.booking
-                                ? { ...t, notes: e.target.value }
-                                : t,
-                            ),
-                          );
-                        }}
-                      />
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
-                  >
-                    No transactions found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="flex justify-between items-center mt-6">
-          <div className="text-sm text-gray-700 dark:text-gray-400">
-            Showing {indexOfFirstItem + 1} to{' '}
-            {Math.min(indexOfLastItem, filteredTransactions.length)} of{' '}
-            {filteredTransactions.length} entries
-          </div>
-          <nav
-            className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-            aria-label="Pagination"
+          <button
+            // onClick={downloadReport}
+            className="ml-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
           >
-            <button
-              onClick={() => paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
-            >
-              Previous
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-                key={i + 1}
-                onClick={() => paginate(i + 1)}
-                className={`relative inline-flex items-center px-4 py-2 border border-eco-green text-sm font-medium ${
-                  currentPage === i + 1
-                    ? 'z-10 bg-eco-green text-white dark:bg-eco-green' // <--- Perubahan di sini
-                    : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button
-              onClick={() => paginate(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
-            >
-              Next
-            </button>
-          </nav>
+            Download Report
+          </button>
         </div>
+
+        {loading ? (
+          <div className="text-center py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+            Loading...
+          </div>
+        ) : (
+          <>
+            <div className="py-6 sm:px-6 lg:px-8 w-full max-w-[calc(100vw-16rem)] overflow-x-hidden">
+              <div className="overflow-auto max-h-[600px] w-full">
+                <table className="w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-600 sticky top-0 z-10">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                        Booking
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                        Date and Time
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[250px]">
+                        Driver
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                        Payment Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                        Payment Method
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[250px]">
+                        Notes
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                    {transactions.length > 0 ? (
+                      transactions.map((transaction) => (
+                        <tr key={transaction.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            {transaction.tranID ?? '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            {transaction.createdAt
+                              ? new Date(transaction.createdAt).toLocaleString()
+                              : '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white min-w-[250px]">
+                            <select
+                              value={transaction.status}
+                              onChange={(e) => handleStatusChange(transaction.id, e.target.value)}
+                              className="border rounded-md px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full max-w-[200px]"
+                            >
+                              {statusOptions.map((s) => (
+                                <option key={s} value={s}>
+                                  {s}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white min-w-[250px]">
+                            <AsyncCreatableSelect
+                              cacheOptions
+                              defaultOptions={drivers.map((d) => ({
+                                value: d.id,
+                                label: d.name || '(No Name)',
+                              }))}
+                              loadOptions={(inputValue: string, callback) => {
+                                const filtered = drivers
+                                  .filter((d) =>
+                                    (d.name ?? '').toLowerCase().includes(inputValue.toLowerCase()),
+                                  )
+                                  .map((d) => ({
+                                    value: d.id,
+                                    label: d.name || '(No Name)',
+                                  }));
+                                callback(filtered);
+                              }}
+                              onCreateOption={(inputValue: string) => {
+                                const payload = {
+                                  name: inputValue, // ✅ ini yang dipakai saga
+                                  licenseNumber: 'TEMP-' + Date.now(),
+                                  phoneNumber: '0000000000',
+                                  transactionId: transaction.id,
+                                };
+                                dispatch(createDriverRequest(payload));
+                              }}
+                              onChange={(option: SingleValue<{ value: string; label: string }>) => {
+                                if (option) {
+                                  dispatch(
+                                    updateTransactionRequest({
+                                      id: transaction.id,
+                                      updates: { driverId: option.value },
+                                    }),
+                                  );
+                                }
+                              }}
+                              value={
+                                transaction.driverId
+                                  ? {
+                                      value: transaction.driverId,
+                                      label:
+                                        transaction.driver?.name ||
+                                        drivers.find((d) => d.id === transaction.driverId)?.name ||
+                                        '(No Name)',
+                                    }
+                                  : null
+                              }
+                              placeholder="Select or create driver..."
+                              className="text-sm w-full"
+                              styles={{
+                                control: (base: any, state: any) => ({
+                                  ...base,
+                                  backgroundColor: '#1F2937',
+                                  borderColor: state.isFocused ? '#3B82F6' : '#374151',
+                                  boxShadow: state.isFocused ? '0 0 0 1px #3B82F6' : 'none',
+                                  '&:hover': {
+                                    borderColor: '#3B82F6',
+                                  },
+                                  minHeight: '2.25rem',
+                                  color: '#D1D5DB',
+                                  maxWidth: '250px',
+                                }),
+                                menu: (base: any) => ({
+                                  ...base,
+                                  backgroundColor: '#1F2937',
+                                  border: '1px solid #374151',
+                                  zIndex: 9999,
+                                  maxWidth: '250px',
+                                }),
+                                option: (base: any, state: any) => ({
+                                  ...base,
+                                  backgroundColor: state.isFocused
+                                    ? '#374151'
+                                    : state.isSelected
+                                    ? '#3B82F6'
+                                    : 'transparent',
+                                  color: state.isSelected ? 'white' : '#D1D5DB',
+                                  cursor: 'pointer',
+                                }),
+                                singleValue: (base: any) => ({
+                                  ...base,
+                                  color: '#D1D5DB',
+                                }),
+                                input: (base: any) => ({
+                                  ...base,
+                                  color: '#D1D5DB',
+                                }),
+                                placeholder: (base: any) => ({
+                                  ...base,
+                                  color: '#9CA3AF',
+                                }),
+                              }}
+                            />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            <div className="bg-cyan-700 text-white px-3 py-1 rounded-[20px] font-semibold border-white border-2 inline-block max-w-[120px] text-center">
+                              {transaction.paymentStatus}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white max-w-[150px]">
+                            {transaction.modeOfPayment}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 dark:text-white min-w-[250px] max-w-[300px]">
+                            <textarea
+                              rows={3}
+                              value={notesDraft[transaction.id] ?? transaction.deliveryNotes ?? ''}
+                              placeholder="Add Notes here..."
+                              className="px-3 py-2 border rounded-lg w-full resize-none shadow-sm text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              onChange={(e) => handleNotesChange(transaction.id, e.target.value)}
+                              onBlur={() => handleNotesSave(transaction.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleNotesSave(transaction.id);
+                                }
+                              }}
+                            />
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-4 text-center">
+                          No transactions found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center mt-6">
+              <div className="text-sm text-gray-700 dark:text-gray-400">
+                Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, total)} of {total}{' '}
+                entries
+              </div>
+              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                <button
+                  onClick={() => paginate(page - 1)}
+                  disabled={page === 1}
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() => paginate(page + 1)}
+                  disabled={page * pageSize >= total}
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                >
+                  Next
+                </button>
+              </nav>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   );

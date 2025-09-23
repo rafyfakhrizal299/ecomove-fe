@@ -19,9 +19,9 @@ const statusOptions = [
   'Picked up',
   'Sort at hub',
   'Out for delivery',
-  'Delivery',
-  'First Delivery Attempt Failed',
-  'Second Delivery Attempt Failed',
+  'Delivered',
+  'drop off location 1  Delivery Attempt Failed',
+  'drop off location 2 Delivery Attempt Failed',
   'Returned to Sender',
 ];
 

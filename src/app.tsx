@@ -16,7 +16,7 @@ const appRouter = createBrowserRouter([
     element: <Layout />,
     children: routes,
   },
-]);
+]); 
 
 function App() {
   const dispatch = useDispatch();

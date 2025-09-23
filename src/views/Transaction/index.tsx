@@ -215,48 +215,27 @@ const Transaction: React.FC = () => {
                               }
                               placeholder="Select or create driver..."
                               className="text-sm w-full"
-                              styles={{
-                                control: (base: any, state: any) => ({
-                                  ...base,
-                                  backgroundColor: '#1F2937',
-                                  borderColor: state.isFocused ? '#3B82F6' : '#374151',
-                                  boxShadow: state.isFocused ? '0 0 0 1px #3B82F6' : 'none',
-                                  '&:hover': {
-                                    borderColor: '#3B82F6',
-                                  },
-                                  minHeight: '2.25rem',
-                                  color: '#D1D5DB',
-                                  maxWidth: '250px',
-                                }),
-                                menu: (base: any) => ({
-                                  ...base,
-                                  backgroundColor: '#1F2937',
-                                  border: '1px solid #374151',
-                                  zIndex: 9999,
-                                  maxWidth: '250px',
-                                }),
-                                option: (base: any, state: any) => ({
-                                  ...base,
-                                  backgroundColor: state.isFocused
-                                    ? '#374151'
-                                    : state.isSelected
-                                    ? '#3B82F6'
-                                    : 'transparent',
-                                  color: state.isSelected ? 'white' : '#D1D5DB',
-                                  cursor: 'pointer',
-                                }),
-                                singleValue: (base: any) => ({
-                                  ...base,
-                                  color: '#D1D5DB',
-                                }),
-                                input: (base: any) => ({
-                                  ...base,
-                                  color: '#D1D5DB',
-                                }),
-                                placeholder: (base: any) => ({
-                                  ...base,
-                                  color: '#9CA3AF',
-                                }),
+                              classNames={{
+                                control: ({ isFocused }) =>
+                                  `min-h-[2.25rem] rounded-md px-2 py-1 border w-full max-w-[250px] text-sm ${
+                                    isFocused
+                                      ? 'border-blue-500 ring-1 ring-blue-500'
+                                      : 'border-gray-300 dark:border-gray-600'
+                                  } bg-white text-gray-900 dark:bg-gray-700 dark:text-white`,
+                                menu: () =>
+                                  'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md mt-1 z-50',
+                                option: ({ isFocused, isSelected }) =>
+                                  `${
+                                    isSelected
+                                      ? 'bg-blue-600 text-white'
+                                      : isFocused
+                                      ? 'bg-gray-100 dark:bg-gray-600'
+                                      : ''
+                                  } 
+     cursor-pointer px-3 py-2 text-sm text-gray-900 dark:text-gray-100`,
+                                singleValue: () => 'text-gray-900 dark:text-white',
+                                input: () => 'text-gray-900 dark:text-white',
+                                placeholder: () => 'text-gray-400 dark:text-gray-400',
                               }}
                             />
                           </td>
@@ -288,7 +267,7 @@ const Transaction: React.FC = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={7} className="px-6 py-4 text-center">
+                        <td colSpan={7} className="px-6 py-4 text-center text-white">
                           No transactions found.
                         </td>
                       </tr>

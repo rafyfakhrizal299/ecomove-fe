@@ -125,7 +125,7 @@ const UserManagement: React.FC = () => {
           />
         </div>
 
-        {loading && <p className="text-center text-gray-500">Memuat data pengguna...</p>}
+        {loading && <p className="text-center text-white">Loading User Data...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
 
         {!loading && !error && (

@@ -46,7 +46,7 @@ const HomePage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <p className="text-center py-10">Loading...</p>;
+    return <p className="text-center py-10 text-white">Loading...</p>;
   }
 
   if (!dashboard) {

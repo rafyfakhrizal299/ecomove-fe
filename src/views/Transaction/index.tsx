@@ -4,14 +4,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/mainStore';
 import {
   createDriverRequest,
-  createDriverSuccess,
   exportExcelRequest,
   fetchDriversRequest,
+  fetchTransactionDetailRequest,
   fetchTransactionsRequest,
   updateTransactionRequest,
 } from '../../slices/transactionSlice';
 import AsyncCreatableSelect from 'react-select/async-creatable';
 import { SingleValue } from 'react-select';
+import HistoryTransaction from './historyTransaction';
 
 const statusOptions = [
   'Booked',
@@ -21,8 +22,7 @@ const statusOptions = [
   'Sort at hub',
   'Out for delivery',
   'Delivered',
-  'drop off location 1  Delivery Attempt Failed',
-  'drop off location 2 Delivery Attempt Failed',
+  'multiple delivery attempts failed',
   'Returned to Sender',
 ];
 
@@ -47,6 +47,8 @@ const Transaction: React.FC = () => {
   const totalPages = Math.ceil(total / pageSize);
   const start = total > 0 ? (page - 1) * pageSize + 1 : 0;
   const end = total > 0 ? Math.min(page * pageSize, total) : 0;
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
 
   useEffect(() => {
     dispatch(fetchTransactionsRequest({ page: 1, pageSize: 5, search: '' }));
@@ -63,7 +65,7 @@ const Transaction: React.FC = () => {
             updates: { driverId: created.id },
           }),
         );
-        setNewDriver(null); // reset biar gak infinite loop
+        setNewDriver(null);
       }
     }
   }, [drivers, newDriver, dispatch]);
@@ -91,79 +93,99 @@ const Transaction: React.FC = () => {
     }
   };
 
+  const handleViewHistory = (id: number) => {
+    dispatch(fetchTransactionDetailRequest(id));
+    setSelectedTransactionId(id);
+    setShowHistoryModal(true);
+  };
+
   return (
-    <div className="py-6 sm:px-6 lg:px-8 w-full max-w-full overflow-x-hidden">
+    <div className="py-6 sm:px-6 lg:px-8 w-full max-w-full">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
         Admin Transaction Management
       </h1>
       <Card className="p-5 mb-6 w-full">
-        <div className="mb-6 flex justify-end">
-          <input
-            type="text"
-            placeholder="Search transactions..."
-            className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="w-full sm:w-auto">
+            <input
+              type="text"
+              placeholder="Search transactions..."
+              className="w-full sm:w-64 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
           <button
             onClick={() => setShowExportModal(true)}
-            className="ml-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap"
           >
             Download Report
           </button>
         </div>
 
         {loading ? (
-          <div className="text-center py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+          <div className="text-center py-4 text-sm font-medium text-gray-900 dark:text-white">
             Loading...
           </div>
         ) : (
           <>
-            <div className="py-6 sm:px-6 lg:px-8 w-full max-w-[calc(100vw-16rem)] overflow-x-hidden">
+            <div className="w-full overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="overflow-auto max-h-[600px] w-full">
-                <table className="w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <table className="w-full divide-y divide-gray-200 dark:divide-gray-700 min-w-[1200px]">
                   <thead className="bg-gray-50 dark:bg-gray-600 sticky top-0 z-10">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[80px]">
+                        ID
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[100px]">
                         Booking
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[180px]">
                         Date and Time
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[200px]">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[250px]">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[250px]">
                         Driver
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[150px]">
                         Payment Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[150px]">
                         Payment Method
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[250px]">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[250px]">
                         Notes
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[140px]">
+                        Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                     {transactions.length > 0 ? (
                       transactions.map((transaction) => (
-                        <tr key={transaction.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        <tr
+                          key={transaction.id}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            {transaction.id ?? '-'}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                             {transaction.tranID ?? '-'}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {transaction.createdAt
                               ? new Date(transaction.createdAt).toLocaleString()
                               : '-'}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white min-w-[250px]">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             <select
                               value={transaction.status}
                               onChange={(e) => handleStatusChange(transaction.id, e.target.value)}
-                              className="border rounded-md px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full max-w-[200px]"
+                              className="w-full max-w-[200px] border rounded-md px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                             >
                               {statusOptions
                                 .slice(statusOptions.indexOf(transaction.status))
@@ -174,7 +196,7 @@ const Transaction: React.FC = () => {
                                 ))}
                             </select>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white min-w-[250px]">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             <AsyncCreatableSelect
                               cacheOptions
                               defaultOptions={drivers.map((d) => ({
@@ -194,7 +216,7 @@ const Transaction: React.FC = () => {
                               }}
                               onCreateOption={(inputValue: string) => {
                                 const payload = {
-                                  name: inputValue, // ✅ ini yang dipakai saga
+                                  name: inputValue,
                                   licenseNumber: 'TEMP-' + Date.now(),
                                   phoneNumber: '0000000000',
                                   transactionId: transaction.id,
@@ -223,7 +245,7 @@ const Transaction: React.FC = () => {
                                   : null
                               }
                               placeholder="Select or create driver..."
-                              className="text-sm w-full"
+                              className="text-sm min-w-[200px]"
                               classNames={{
                                 control: ({ isFocused }) =>
                                   `min-h-[2.25rem] rounded-md px-2 py-1 border w-full max-w-[250px] text-sm ${
@@ -241,27 +263,27 @@ const Transaction: React.FC = () => {
                                       ? 'bg-gray-100 dark:bg-gray-600'
                                       : ''
                                   } 
-     cursor-pointer px-3 py-2 text-sm text-gray-900 dark:text-gray-100`,
+                                  cursor-pointer px-3 py-2 text-sm text-gray-900 dark:text-gray-100`,
                                 singleValue: () => 'text-gray-900 dark:text-white',
                                 input: () => 'text-gray-900 dark:text-white',
                                 placeholder: () => 'text-gray-400 dark:text-gray-400',
                               }}
                             />
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                            <div className="bg-cyan-700 text-white px-3 py-1 rounded-[20px] font-semibold border-white border-2 inline-block max-w-[120px] text-center">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            <div className="bg-cyan-700 text-white px-3 py-1 rounded-[20px] font-semibold border-white border-2 inline-block min-w-[120px] text-center">
                               {transaction.paymentStatus}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white max-w-[150px]">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white max-w-[150px] truncate">
                             {transaction.modeOfPayment}
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-900 dark:text-white min-w-[250px] max-w-[300px]">
+                          <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
                             <textarea
                               rows={3}
                               value={notesDraft[transaction.id] ?? transaction.deliveryNotes ?? ''}
                               placeholder="Add Notes here..."
-                              className="px-3 py-2 border rounded-lg w-full resize-none shadow-sm text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              className="w-full min-w-[200px] px-3 py-2 border rounded-lg resize-none shadow-sm text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               onChange={(e) => handleNotesChange(transaction.id, e.target.value)}
                               onBlur={() => handleNotesSave(transaction.id)}
                               onKeyDown={(e) => {
@@ -272,11 +294,22 @@ const Transaction: React.FC = () => {
                               }}
                             />
                           </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <button
+                              onClick={() => handleViewHistory(transaction.id)}
+                              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap text-sm"
+                            >
+                              View History
+                            </button>
+                          </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={7} className="px-6 py-4 text-center text-white">
+                        <td
+                          colSpan={9}
+                          className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
+                        >
                           No transactions found.
                         </td>
                       </tr>
@@ -286,34 +319,34 @@ const Transaction: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex justify-between items-center mt-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
               <div className="text-sm text-gray-700 dark:text-gray-400">
                 {total > 0 ? (
                   <>
                     Showing {start} to {end} of {total} entries
                   </>
                 ) : (
-                  <></>
+                  'No entries to show'
                 )}
               </div>
 
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+              <nav className="flex items-center space-x-2">
                 <button
                   onClick={() => paginate(page - 1)}
                   disabled={page === 1}
-                  className="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+                  className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Prev
                 </button>
 
-                <span className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                <span className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 min-w-[100px] text-center">
                   Page {page} of {totalPages || 1}
                 </span>
 
                 <button
                   onClick={() => paginate(page + 1)}
                   disabled={page === totalPages || total === 0}
-                  className="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+                  className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
@@ -322,9 +355,21 @@ const Transaction: React.FC = () => {
           </>
         )}
       </Card>
+
+      {showHistoryModal && selectedTransactionId && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-11/12 max-w-4xl max-h-[90vh] overflow-auto">
+            <HistoryTransaction
+              id={selectedTransactionId}
+              onClose={() => setShowHistoryModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
       {showExportModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-[400px]">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-11/12 max-w-md">
             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
               Export Transactions
             </h2>
@@ -332,35 +377,35 @@ const Transaction: React.FC = () => {
             <div className="space-y-4">
               <button
                 onClick={() => {
-                  dispatch(exportExcelRequest(undefined)); // ✅ export semua
+                  dispatch(exportExcelRequest(undefined));
                   setShowExportModal(false);
                 }}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 Export All
               </button>
 
               <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Start Date
                 </label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full border rounded-md px-2 py-1 dark:bg-gray-700 dark:text-white"
+                  className="w-full border rounded-md px-3 py-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   End Date
                 </label>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full border rounded-md px-2 py-1 dark:bg-gray-700 dark:text-white"
+                  className="w-full border rounded-md px-3 py-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
@@ -372,7 +417,7 @@ const Transaction: React.FC = () => {
                   }
                 }}
                 disabled={!startDate || !endDate}
-                className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Export by Date Range
               </button>
@@ -380,7 +425,7 @@ const Transaction: React.FC = () => {
 
             <button
               onClick={() => setShowExportModal(false)}
-              className="mt-4 w-full px-4 py-2 border rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="mt-4 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               Cancel
             </button>

@@ -9,6 +9,9 @@ import {
   fetchDriversFailure,
   fetchDriversRequest,
   fetchDriversSuccess,
+  fetchTransactionDetailFailure,
+  fetchTransactionDetailRequest,
+  fetchTransactionDetailSuccess,
   fetchTransactionsFailure,
   fetchTransactionsRequest,
   fetchTransactionsSuccess,
@@ -20,6 +23,7 @@ import {
   createDriverApi,
   downloadExcelTransaction,
   fetchDriversApi,
+  fetchTransactionDetailApi,
   fetchTransactionsApi,
   updateTransactionApi,
 } from '../services/transactionService';
@@ -118,6 +122,17 @@ function* exportExcelSaga(
   }
 }
 
+function* fetchTransactionDetailSaga(
+  action: ReturnType<typeof fetchTransactionDetailRequest>,
+): SagaIterator {
+  try {
+    const transaction: Transaction = yield call(fetchTransactionDetailApi, action.payload);
+    yield put(fetchTransactionDetailSuccess(transaction));
+  } catch (error: any) {
+    yield put(fetchTransactionDetailFailure(error.message));
+  }
+}
+
 export function* transactionSaga() {
   yield all([
     takeLatest(fetchTransactionsRequest.type, fetchTransactionsSaga),
@@ -125,5 +140,6 @@ export function* transactionSaga() {
     takeLatest(fetchDriversRequest.type, fetchDriversSaga),
     takeLatest('transaction/createDriverRequest', createDriverSaga),
     takeLatest(exportExcelRequest.type, exportExcelSaga),
+    takeLatest(fetchTransactionDetailRequest.type, fetchTransactionDetailSaga),
   ]);
 }

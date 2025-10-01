@@ -32,7 +32,8 @@ export interface Transaction {
   driverId: string | null;
   createdAt: string;
   updatedAt: string;
-  driver?: Driver; 
+  driver?: Driver;
+  receivers?: Receiver[];
 }
 
 export interface TransactionPageResponse {
@@ -40,4 +41,31 @@ export interface TransactionPageResponse {
   total: number;
   page: number;
   pageSize: number;
+}
+
+export interface Receiver {
+  id: number;
+  transactionId: number;
+  savedAddress: boolean;
+  addAddress: boolean;
+  receiverAddressId: number;
+  address: string;
+  unitStreet: string;
+  pinnedLocation: string;
+  contactName: string;
+  contactNumber: string;
+  contactEmail: string;
+  deliveryType: string;
+  packageSize: string;
+  distance: string;
+  fee: string;
+  bringPouch: boolean;
+  itemType: string;
+  packageType: string;
+  cod: boolean;
+  itemProtection: boolean;
+  deliveryNotes: string;
+  weight: string;
+  createdAt: string;
+  updatedAt: string;
 }

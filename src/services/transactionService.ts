@@ -50,3 +50,8 @@ export const downloadExcelTransaction = {
     return response.data;
   },
 };
+
+export const fetchTransactionDetailApi = async (id: number): Promise<Transaction> => {
+  const response = await axios.get(`${API_URL}/transaction/${id}`);
+  return response.data.data; // ✅ sesuai struktur respons yang kamu kasih
+};

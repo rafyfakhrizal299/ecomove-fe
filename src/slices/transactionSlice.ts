@@ -9,6 +9,7 @@ interface TransactionState {
   loading: boolean;
   error: string | null;
   drivers: Driver[];
+  detail?: Transaction | null;
 }
 
 const initialState: TransactionState = {
@@ -19,6 +20,7 @@ const initialState: TransactionState = {
   loading: false,
   error: null,
   drivers: [],
+  detail: null,
 };
 
 const transactionSlice = createSlice({
@@ -123,6 +125,19 @@ const transactionSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    fetchTransactionDetailRequest(state, _action: PayloadAction<number>) {
+      state.loading = true;
+      state.error = null;
+    },
+    fetchTransactionDetailSuccess(state, action: PayloadAction<Transaction>) {
+      state.loading = false;
+      state.detail = action.payload;
+    },
+    fetchTransactionDetailFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+      state.detail = null;
+    },
   },
 });
 
@@ -142,6 +157,9 @@ export const {
   exportExcelRequest,
   exportExcelSuccess,
   exportExcelFailure,
+  fetchTransactionDetailRequest,
+  fetchTransactionDetailSuccess,
+  fetchTransactionDetailFailure,
 } = transactionSlice.actions;
 
 export default transactionSlice.reducer;

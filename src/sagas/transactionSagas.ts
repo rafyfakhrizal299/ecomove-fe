@@ -3,6 +3,9 @@ import {
   createDriverFailure,
   createDriverRequest,
   createDriverSuccess,
+  exportExcelFailure,
+  exportExcelRequest,
+  exportExcelSuccess,
   fetchDriversFailure,
   fetchDriversRequest,
   fetchDriversSuccess,
@@ -15,6 +18,7 @@ import {
 } from '../slices/transactionSlice';
 import {
   createDriverApi,
+  downloadExcelTransaction,
   fetchDriversApi,
   fetchTransactionsApi,
   updateTransactionApi,
@@ -60,7 +64,7 @@ function* fetchDriversSaga() {
 }
 
 export function* createDriverSaga(
-  action: ReturnType<typeof createDriverRequest>
+  action: ReturnType<typeof createDriverRequest>,
 ): Generator<any, void, any> {
   try {
     const apiResult: { id: string } = yield call(createDriverApi, {
@@ -74,7 +78,7 @@ export function* createDriverSaga(
       name: action.payload.name,
       licenseNumber: action.payload.licenseNumber,
       phoneNumber: action.payload.phoneNumber,
-      email: "",
+      email: '',
       isActive: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -87,7 +91,7 @@ export function* createDriverSaga(
         updateTransactionRequest({
           id: (action.payload as any).transactionId,
           updates: { driverId: newDriver.id },
-        })
+        }),
       );
     }
   } catch (error: any) {
@@ -95,6 +99,24 @@ export function* createDriverSaga(
   }
 }
 
+function* exportExcelSaga(
+  action: PayloadAction<{ startDate?: string; endDate?: string } | undefined>,
+): Generator<any, void, any> {
+  try {
+    const blob = yield call(downloadExcelTransaction.exportExcel, action.payload);
+    const url = window.URL.createObjectURL(new Blob([blob]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'transactions.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    yield put(exportExcelSuccess());
+  } catch (error: any) {
+    yield put(exportExcelFailure(error.message));
+  }
+}
 
 export function* transactionSaga() {
   yield all([
@@ -102,5 +124,6 @@ export function* transactionSaga() {
     takeLatest(updateTransactionRequest.type, updateTransactionSaga),
     takeLatest(fetchDriversRequest.type, fetchDriversSaga),
     takeLatest('transaction/createDriverRequest', createDriverSaga),
+    takeLatest(exportExcelRequest.type, exportExcelSaga),
   ]);
 }

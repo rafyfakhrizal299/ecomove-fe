@@ -5,6 +5,7 @@ import { AppDispatch, RootState } from '../../store/mainStore';
 import {
   createDriverRequest,
   createDriverSuccess,
+  exportExcelRequest,
   fetchDriversRequest,
   fetchTransactionsRequest,
   updateTransactionRequest,
@@ -40,6 +41,12 @@ const Transaction: React.FC = () => {
   const [notesDraft, setNotesDraft] = useState<{ [id: number]: string }>({});
   const [newDriver, setNewDriver] = useState<{ name: string; transactionId: number } | null>(null);
   const isSidebarOpen = useSelector((state: RootState) => state.ui.isSidebarOpen);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const totalPages = Math.ceil(total / pageSize);
+  const start = total > 0 ? (page - 1) * pageSize + 1 : 0;
+  const end = total > 0 ? Math.min(page * pageSize, total) : 0;
 
   useEffect(() => {
     dispatch(fetchTransactionsRequest({ page: 1, pageSize: 5, search: '' }));
@@ -99,7 +106,7 @@ const Transaction: React.FC = () => {
             onChange={handleSearchChange}
           />
           <button
-            // onClick={downloadReport}
+            onClick={() => setShowExportModal(true)}
             className="ml-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
           >
             Download Report
@@ -158,11 +165,13 @@ const Transaction: React.FC = () => {
                               onChange={(e) => handleStatusChange(transaction.id, e.target.value)}
                               className="border rounded-md px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full max-w-[200px]"
                             >
-                              {statusOptions.map((s) => (
-                                <option key={s} value={s}>
-                                  {s}
-                                </option>
-                              ))}
+                              {statusOptions
+                                .slice(statusOptions.indexOf(transaction.status))
+                                .map((s) => (
+                                  <option key={s} value={s}>
+                                    {s}
+                                  </option>
+                                ))}
                             </select>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white min-w-[250px]">
@@ -279,21 +288,32 @@ const Transaction: React.FC = () => {
 
             <div className="flex justify-between items-center mt-6">
               <div className="text-sm text-gray-700 dark:text-gray-400">
-                Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, total)} of {total}{' '}
-                entries
+                {total > 0 ? (
+                  <>
+                    Showing {start} to {end} of {total} entries
+                  </>
+                ) : (
+                  <></>
+                )}
               </div>
+
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                 <button
                   onClick={() => paginate(page - 1)}
                   disabled={page === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                  className="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
                 >
                   Prev
                 </button>
+
+                <span className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                  Page {page} of {totalPages || 1}
+                </span>
+
                 <button
                   onClick={() => paginate(page + 1)}
-                  disabled={page * pageSize >= total}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                  disabled={page === totalPages || total === 0}
+                  className="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
                 >
                   Next
                 </button>
@@ -302,6 +322,71 @@ const Transaction: React.FC = () => {
           </>
         )}
       </Card>
+      {showExportModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+              Export Transactions
+            </h2>
+
+            <div className="space-y-4">
+              <button
+                onClick={() => {
+                  dispatch(exportExcelRequest(undefined)); // ✅ export semua
+                  setShowExportModal(false);
+                }}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Export All
+              </button>
+
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full border rounded-md px-2 py-1 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full border rounded-md px-2 py-1 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  if (startDate && endDate) {
+                    dispatch(exportExcelRequest({ startDate, endDate }));
+                    setShowExportModal(false);
+                  }
+                }}
+                disabled={!startDate || !endDate}
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+              >
+                Export by Date Range
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowExportModal(false)}
+              className="mt-4 w-full px-4 py-2 border rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

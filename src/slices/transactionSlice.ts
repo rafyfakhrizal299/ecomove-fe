@@ -60,11 +60,14 @@ const transactionSlice = createSlice({
     },
     updateTransactionRequest: (
       state,
-      _action: PayloadAction<{ id: number; updates: Partial<Transaction> }>
-    ) => {},
+      _action: PayloadAction<{ id: number; updates: Partial<Transaction> }>,
+    ) => {
+      state.loading = true;
+      state.error = null;
+    },
     updateTransactionSuccess: (
       state,
-      action: PayloadAction<{ id: number; updates: Partial<Transaction> }>
+      action: PayloadAction<{ id: number; updates: Partial<Transaction> }>,
     ) => {
       const { id, updates } = action.payload;
       const index = state.data.findIndex((t) => t.id === id);
@@ -94,7 +97,7 @@ const transactionSlice = createSlice({
     },
     createDriverRequest: (
       state,
-      _action: PayloadAction<{ name: string; licenseNumber: string; phoneNumber: string }>
+      _action: PayloadAction<{ name: string; licenseNumber: string; phoneNumber: string }>,
     ) => {
       state.loading = true;
     },
@@ -103,6 +106,20 @@ const transactionSlice = createSlice({
       state.drivers.push(action.payload); // langsung push aja
     },
     createDriverFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    exportExcelRequest: (
+      state,
+      _action: PayloadAction<{ startDate?: string; endDate?: string } | undefined>,
+    ) => {
+      state.loading = true;
+      state.error = null;
+    },
+    exportExcelSuccess: (state) => {
+      state.loading = false;
+    },
+    exportExcelFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },
@@ -122,6 +139,9 @@ export const {
   createDriverRequest,
   createDriverSuccess,
   createDriverFailure,
+  exportExcelRequest,
+  exportExcelSuccess,
+  exportExcelFailure,
 } = transactionSlice.actions;
 
 export default transactionSlice.reducer;

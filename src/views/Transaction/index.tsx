@@ -51,7 +51,7 @@ const Transaction: React.FC = () => {
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
 
   useEffect(() => {
-    dispatch(fetchTransactionsRequest({ page: 1, totalPages: 5, search: '' }));
+    dispatch(fetchTransactionsRequest({ page: 1, limit: 10, search: '' }));
     dispatch(fetchDriversRequest());
   }, [dispatch]);
 
@@ -72,11 +72,19 @@ const Transaction: React.FC = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    dispatch(fetchTransactionsRequest({ page: 1, totalPages, search: e.target.value }));
+    dispatch(fetchTransactionsRequest({ page: 1, limit: 10, search: e.target.value }));
   };
 
   const paginate = (newPage: number) => {
-    dispatch(fetchTransactionsRequest({ page: newPage, totalPages, search: searchQuery }));
+    if (newPage < 1 || newPage > totalPages) return; // validasi aman
+
+    dispatch(
+      fetchTransactionsRequest({
+        page: newPage,
+        limit: 10,
+        search: searchQuery,
+      })
+    );
   };
 
   const handleStatusChange = (id: number, status: string) => {

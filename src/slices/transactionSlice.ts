@@ -5,6 +5,7 @@ interface TransactionState {
   data: Transaction[];
   total: number;
   page: number;
+  pageSize: number;
   totalPages: number;
   loading: boolean;
   error: string | null;
@@ -16,7 +17,8 @@ const initialState: TransactionState = {
   data: [],
   total: 0,
   page: 1,
-  totalPages: 10,
+  pageSize: 10,
+  totalPages: 0,
   loading: false,
   error: null,
   drivers: [],
@@ -29,19 +31,20 @@ const transactionSlice = createSlice({
   reducers: {
     fetchTransactionsRequest(
       state,
-      _action: PayloadAction<{ page: number; totalPages: number; search: string }>,
+      _action: PayloadAction<{ page: number; limit: number; search: string }>,
     ) {
       state.loading = true;
       state.error = null;
     },
     fetchTransactionsSuccess(
       state,
-      action: PayloadAction<{ data: Transaction[]; total: number; page: number; totalPages: number }>,
+      action: PayloadAction<{ data: Transaction[]; total: number; page: number; limit: number, totalPages: number }>,
     ) {
       state.loading = false;
       state.data = action.payload.data;
       state.total = action.payload.total;
       state.page = action.payload.page;
+      state.pageSize = action.payload.limit;
       state.totalPages = action.payload.totalPages;
     },
     fetchTransactionsFailure(state, action: PayloadAction<string>) {

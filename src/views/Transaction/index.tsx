@@ -34,7 +34,7 @@ const Transaction: React.FC = () => {
     page,
     loading,
     totalPages,
-    limit,
+    pageSize,
     drivers = [],
   } = useSelector((state: RootState) => state.transaction);
 
@@ -79,13 +79,18 @@ const Transaction: React.FC = () => {
   
 
   const paginate = (newPage: number) => {
-    if (!Number.isFinite(newPage) || newPage < 1 || newPage > totalPages) {
+    if (
+      !Number.isFinite(newPage) ||
+      newPage < 1 ||
+      newPage > totalPages ||
+      newPage === safePage
+    ) {
       return;
     }
 
     dispatch(fetchTransactionsRequest({
       page: newPage,
-      limit,
+      limit: pageSize,
       search: searchQuery,
     }));
   };
@@ -344,7 +349,7 @@ const Transaction: React.FC = () => {
 
               <nav className="flex items-center space-x-2">
                 <button
-                  onClick={() => paginate(page - 1)}
+                  onClick={() => paginate(safePage - 1)}
                   disabled={safePage <= 1}
                   className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium
                     text-gray-500 hover:bg-gray-50
@@ -359,7 +364,7 @@ const Transaction: React.FC = () => {
                 </span>
 
                 <button
-                  onClick={() => paginate(page + 1)}
+                  onClick={() => paginate(safePage + 1)}
                   disabled={safePage >= totalPages}
                   className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium
                     text-gray-500 hover:bg-gray-50

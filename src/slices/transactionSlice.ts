@@ -38,14 +38,30 @@ const transactionSlice = createSlice({
     },
     fetchTransactionsSuccess(
       state,
-      action: PayloadAction<{ data: Transaction[]; total: number; page: number; limit: number, totalPages: number }>,
+      action: PayloadAction<{
+        data: Transaction[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+      }>
     ) {
       state.loading = false;
       state.data = action.payload.data;
       state.total = action.payload.total;
-      state.page = action.payload.page;
-      state.pageSize = action.payload.limit;
-      state.totalPages = action.payload.totalPages;
+
+      state.page = Number.isFinite(action.payload.page) && action.payload.page > 0
+        ? action.payload.page
+        : 1;
+
+      state.pageSize = Number.isFinite(action.payload.limit) && action.payload.limit > 0
+        ? action.payload.limit
+        : 10;
+
+      state.totalPages =
+        Number.isFinite(action.payload.totalPages) && action.payload.totalPages > 0
+          ? action.payload.totalPages
+          : 1;
     },
     fetchTransactionsFailure(state, action: PayloadAction<string>) {
       state.loading = false;

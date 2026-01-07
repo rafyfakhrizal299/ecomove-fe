@@ -51,6 +51,7 @@ const Transaction: React.FC = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
   const safePage = Number.isFinite(page) && page > 0 ? page : 1;
+  const safeTotalPages = Number.isFinite(totalPages) && totalPages > 0 ? totalPages : 1;
 
   useEffect(() => {
     dispatch(fetchTransactionsRequest({ page: 1, limit: 10, search: '' }));
@@ -340,7 +341,7 @@ const Transaction: React.FC = () => {
               <div className="text-sm text-gray-700 dark:text-gray-400">
                 {total > 0 ? (
                   <span className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 min-w-[120px] text-center">
-                    Page {page} of {totalPages}
+                    Page {safePage} of {safeTotalPages}
                   </span>
                 ) : (
                   'No entries to show'

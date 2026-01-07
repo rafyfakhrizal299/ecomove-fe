@@ -49,6 +49,7 @@ const Transaction: React.FC = () => {
   const end = total > 0 ? Math.min(page * totalPages, total) : 0;
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
+  const safePage = Number.isFinite(page) && page > 0 ? page : 1;
 
   useEffect(() => {
     dispatch(fetchTransactionsRequest({ page: 1, limit: 10, search: '' }));
@@ -76,15 +77,15 @@ const Transaction: React.FC = () => {
   };
 
   const paginate = (newPage: number) => {
-    if (newPage < 1 || newPage > totalPages) return; // validasi aman
+    if (!Number.isFinite(newPage) || newPage < 1 || newPage > totalPages) {
+      return;
+    }
 
-    dispatch(
-      fetchTransactionsRequest({
-        page: newPage,
-        limit: 10,
-        search: searchQuery,
-      })
-    );
+    dispatch(fetchTransactionsRequest({
+      page: newPage,
+      limit: 10,
+      search: searchQuery,
+    }));
   };
 
   const handleStatusChange = (id: number, status: string) => {
@@ -341,7 +342,7 @@ const Transaction: React.FC = () => {
               <nav className="flex items-center space-x-2">
                 <button
                   onClick={() => paginate(page - 1)}
-                  disabled={page <= 1}
+                  disabled={safePage <= 1}
                   className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium
                     text-gray-500 hover:bg-gray-50
                     disabled:opacity-50 disabled:cursor-not-allowed
@@ -356,7 +357,7 @@ const Transaction: React.FC = () => {
 
                 <button
                   onClick={() => paginate(page + 1)}
-                  disabled={page >= totalPages}
+                  disabled={safePage >= totalPages}
                   className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium
                     text-gray-500 hover:bg-gray-50
                     disabled:opacity-50 disabled:cursor-not-allowed

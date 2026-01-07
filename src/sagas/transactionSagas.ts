@@ -31,17 +31,18 @@ import { SagaIterator } from 'redux-saga';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { Driver, Transaction } from '../types/transactionType';
 
-function* fetchTransactionsSaga(action: ReturnType<typeof fetchTransactionsRequest>): SagaIterator {
+function* fetchTransactionsSaga(
+  action: ReturnType<typeof fetchTransactionsRequest>
+): SagaIterator {
   try {
     const { page, limit, search } = action.payload;
+
     const response = yield call(fetchTransactionsApi, page, limit, search);
+
     yield put(
       fetchTransactionsSuccess({
         data: response.data,
-        total: response.total,
-        page: response.page,
-        limit: response.limit,
-        totalPages: response.totalPages,
+        pagination: response.pagination, // ✅ KUNCI
       }),
     );
   } catch (error: any) {

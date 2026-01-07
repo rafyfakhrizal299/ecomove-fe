@@ -52,6 +52,7 @@ const transactionSlice = createSlice({
       state.data = action.payload.data;
 
       const p = action.payload.pagination;
+      console.log(p)
 
       state.total = Number.isFinite(p.total) ? p.total : 0;
 

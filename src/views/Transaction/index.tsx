@@ -32,7 +32,6 @@ const Transaction: React.FC = () => {
     data: transactions,
     total,
     page,
-    pageSize,
     loading,
     totalPages,
     drivers = [],
@@ -45,14 +44,14 @@ const Transaction: React.FC = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  // const totalPages = Math.ceil(total / pageSize);
-  const start = total > 0 ? (page - 1) * pageSize + 1 : 0;
-  const end = total > 0 ? Math.min(page * pageSize, total) : 0;
+  // const totalPages = Math.ceil(total / totalPages);
+  const start = total > 0 ? (page - 1) * totalPages + 1 : 0;
+  const end = total > 0 ? Math.min(page * totalPages, total) : 0;
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
 
   useEffect(() => {
-    dispatch(fetchTransactionsRequest({ page: 1, pageSize: 5, search: '' }));
+    dispatch(fetchTransactionsRequest({ page: 1, totalPages: 5, search: '' }));
     dispatch(fetchDriversRequest());
   }, [dispatch]);
 
@@ -73,11 +72,11 @@ const Transaction: React.FC = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    dispatch(fetchTransactionsRequest({ page: 1, pageSize, search: e.target.value }));
+    dispatch(fetchTransactionsRequest({ page: 1, totalPages, search: e.target.value }));
   };
 
   const paginate = (newPage: number) => {
-    dispatch(fetchTransactionsRequest({ page: newPage, pageSize, search: searchQuery }));
+    dispatch(fetchTransactionsRequest({ page: newPage, totalPages, search: searchQuery }));
   };
 
   const handleStatusChange = (id: number, status: string) => {

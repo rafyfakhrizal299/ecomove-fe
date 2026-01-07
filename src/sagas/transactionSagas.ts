@@ -33,14 +33,14 @@ import { Driver, Transaction } from '../types/transactionType';
 
 function* fetchTransactionsSaga(action: ReturnType<typeof fetchTransactionsRequest>): SagaIterator {
   try {
-    const { page, pageSize, search } = action.payload;
-    const response = yield call(fetchTransactionsApi, page, pageSize, search);
+    const { page, totalPages, search } = action.payload;
+    const response = yield call(fetchTransactionsApi, page, totalPages, search);
     yield put(
       fetchTransactionsSuccess({
         data: response.data,
         total: response.total,
         page: response.page,
-        pageSize: response.pageSize,
+        totalPages: response.totalPages,
       }),
     );
   } catch (error: any) {

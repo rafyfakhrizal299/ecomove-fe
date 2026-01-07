@@ -1,14 +1,12 @@
-import axios from 'axios';
+import axiosInstance from '../lib/axios';
 import { Driver, Transaction, TransactionPageResponse } from '../types/transactionType';
-
-const API_URL = 'https://ecomove-be-dev.vercel.app';
 
 export const fetchTransactionsApi = async (
   page: number,
   pageSize: number,
   search: string,
 ): Promise<TransactionPageResponse> => {
-  const response = await axios.get(`${API_URL}/transaction/page`, {
+  const response = await axiosInstance.get('/transaction/page', {
     params: { page, pageSize, search },
   });
   return response.data;
@@ -18,12 +16,12 @@ export const updateTransactionApi = async (
   id: number,
   updates: Partial<Transaction>,
 ): Promise<Transaction> => {
-  const response = await axios.put(`${API_URL}/transaction/${id}`, updates);
+  const response = await axiosInstance.put(`/transaction/${id}`, updates);
   return response.data;
 };
 
 export const fetchDriversApi = async (): Promise<Driver[]> => {
-  const response = await axios.get(`${API_URL}/driver`);
+  const response = await axiosInstance.get('/driver');
   return Array.isArray(response.data) ? response.data : response.data.data;
 };
 
@@ -32,26 +30,28 @@ export const createDriverApi = async (driver: {
   licenseNumber: string;
   phoneNumber: string;
 }): Promise<Driver> => {
-  const response = await axios.post(`${API_URL}/driver`, driver);
+  const response = await axiosInstance.post('/driver', driver);
   return response.data as Driver;
 };
 
 export const downloadExcelTransaction = {
   exportExcel: async (params?: { startDate?: string; endDate?: string }) => {
-    let url = `${API_URL}/export/transactions/excel`;
+    let url = '/export/transactions/excel';
 
     if (params?.startDate && params?.endDate) {
       url += `?startDate=${params.startDate}&endDate=${params.endDate}`;
     }
 
-    const response = await axios.get(url, {
+    const response = await axiosInstance.get(url, {
       responseType: 'blob',
     });
     return response.data;
   },
 };
 
-export const fetchTransactionDetailApi = async (id: number): Promise<Transaction> => {
-  const response = await axios.get(`${API_URL}/transaction/${id}`);
-  return response.data.data; // ✅ sesuai struktur respons yang kamu kasih
+export const fetchTransactionDetailApi = async (
+  id: number
+): Promise<Transaction> => {
+  const response = await axiosInstance.get(`/transaction/${id}`);
+  return response.data.data;
 };

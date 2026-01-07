@@ -34,6 +34,7 @@ const Transaction: React.FC = () => {
     page,
     pageSize,
     loading,
+    totalPages,
     drivers = [],
   } = useSelector((state: RootState) => state.transaction);
 

@@ -29,7 +29,7 @@ const transactionSlice = createSlice({
   reducers: {
     fetchTransactionsRequest(
       state,
-      _action: PayloadAction<{ page: number; pageSize: number; search: string }>,
+      _action: PayloadAction<{ page: number; totalPages: number; search: string }>,
     ) {
       state.loading = true;
       state.error = null;

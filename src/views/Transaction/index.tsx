@@ -34,6 +34,7 @@ const Transaction: React.FC = () => {
     page,
     loading,
     totalPages,
+    limit,
     drivers = [],
   } = useSelector((state: RootState) => state.transaction);
 
@@ -75,6 +76,7 @@ const Transaction: React.FC = () => {
     setSearchQuery(e.target.value);
     dispatch(fetchTransactionsRequest({ page: 1, limit: 10, search: e.target.value }));
   };
+  
 
   const paginate = (newPage: number) => {
     if (!Number.isFinite(newPage) || newPage < 1 || newPage > totalPages) {
@@ -83,7 +85,7 @@ const Transaction: React.FC = () => {
 
     dispatch(fetchTransactionsRequest({
       page: newPage,
-      limit: 10,
+      limit,
       search: searchQuery,
     }));
   };
@@ -107,6 +109,7 @@ const Transaction: React.FC = () => {
     setSelectedTransactionId(id);
     setShowHistoryModal(true);
   };
+  console.log(totalPages)
 
   return (
     <div className="py-6 sm:px-6 lg:px-8 w-full max-w-full">

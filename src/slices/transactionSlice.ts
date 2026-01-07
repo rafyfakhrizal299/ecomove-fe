@@ -40,27 +40,30 @@ const transactionSlice = createSlice({
       state,
       action: PayloadAction<{
         data: Transaction[];
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          totalPages: number;
+        };
       }>
     ) {
       state.loading = false;
       state.data = action.payload.data;
-      state.total = action.payload.total;
 
-      state.page = Number.isFinite(action.payload.page) && action.payload.page > 0
-        ? action.payload.page
-        : 1;
+      const p = action.payload.pagination;
 
-      state.pageSize = Number.isFinite(action.payload.limit) && action.payload.limit > 0
-        ? action.payload.limit
-        : 10;
+      state.total = Number.isFinite(p.total) ? p.total : 0;
+
+      state.page =
+        Number.isFinite(p.page) && p.page > 0 ? p.page : 1;
+
+      state.pageSize =
+        Number.isFinite(p.limit) && p.limit > 0 ? p.limit : 10;
 
       state.totalPages =
-        Number.isFinite(action.payload.totalPages) && action.payload.totalPages > 0
-          ? action.payload.totalPages
+        Number.isFinite(p.totalPages) && p.totalPages > 0
+          ? p.totalPages
           : 1;
     },
     fetchTransactionsFailure(state, action: PayloadAction<string>) {

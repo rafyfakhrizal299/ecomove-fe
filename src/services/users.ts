@@ -1,76 +1,32 @@
-import axios from 'axios';
+import axiosInstance from '../lib/axios';
 import { PaginationData, User } from '../types/user';
 import { UpdateUserPayload } from '../slices/users';
 import { Address } from '../types/address';
 
-const API_URL = 'https://ecomove-be-dev.vercel.app';
-
 export const getPaginatedUsers = async (
   page: number,
   limit: number = 10,
-  token: string,
 ): Promise<PaginationData> => {
-  try {
-    const url = `${API_URL}/auth/list-pagination?page=${page}&limit=${limit}`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data.results;
-  } catch (error) {
-    throw error;
-  }
+  const response = await axiosInstance.get('/auth/list-pagination', {
+    params: { page, limit },
+  });
+  return response.data.results;
 };
 
 export const updateUser = async (
   id: string,
-  userData: Omit<UpdateUserPayload, 'id'>, // Omit 'id' karena sudah ada di URL
-  token: string,
+  userData: Omit<UpdateUserPayload, 'id'>,
 ): Promise<User> => {
-  try {
-    const url = `${API_URL}/auth/edit-user/${id}`;
-    const response = await axios.put(url, userData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json', // Pastikan header ini ada
-      },
-    });
-    // Asumsi API mengembalikan objek User yang sudah diupdate langsung di response.data
-    return response.data;
-  } catch (error) {
-    console.error('Error updating user:', error);
-    throw error;
-  }
+  const response = await axiosInstance.put(`/auth/edit-user/${id}`, userData);
+  return response.data;
 };
 
-export const deleteUser = async (id: string, token: string) => {
-  try {
-    const url = `${API_URL}/auth/users/${id}`;
-    const response = await axios.delete(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error deleting user:', error);
-    throw error;
-  }
+export const deleteUser = async (id: string) => {
+  const response = await axiosInstance.delete(`/auth/users/${id}`);
+  return response.data;
 };
 
-export const getUserAddress = async (id: string, token: string): Promise<Address[]> => {
-  try {
-    const url = `${API_URL}/address/get-by-user/${id}`;
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data.results;
-  } catch (error) {
-    console.error('Error fetching user addresses:', error);
-    throw error;
-  }
+export const getUserAddress = async (id: string): Promise<Address[]> => {
+  const response = await axiosInstance.get(`/address/get-by-user/${id}`);
+  return response.data.results;
 };

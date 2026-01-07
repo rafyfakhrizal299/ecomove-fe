@@ -44,7 +44,7 @@ const Transaction: React.FC = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const totalPages = Math.ceil(total / pageSize);
+  // const totalPages = Math.ceil(total / pageSize);
   const start = total > 0 ? (page - 1) * pageSize + 1 : 0;
   const end = total > 0 ? Math.min(page * pageSize, total) : 0;
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -322,9 +322,9 @@ const Transaction: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
               <div className="text-sm text-gray-700 dark:text-gray-400">
                 {total > 0 ? (
-                  <>
-                    Showing {start} to {end} of {total} entries
-                  </>
+                  <span className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 min-w-[120px] text-center">
+                    Page {page} of {totalPages}
+                  </span>
                 ) : (
                   'No entries to show'
                 )}
@@ -333,8 +333,11 @@ const Transaction: React.FC = () => {
               <nav className="flex items-center space-x-2">
                 <button
                   onClick={() => paginate(page - 1)}
-                  disabled={page === 1}
-                  className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={page <= 1}
+                  className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium
+                    text-gray-500 hover:bg-gray-50
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
                   Prev
                 </button>
@@ -345,8 +348,11 @@ const Transaction: React.FC = () => {
 
                 <button
                   onClick={() => paginate(page + 1)}
-                  disabled={page === totalPages || total === 0}
-                  className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={page >= totalPages}
+                  className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium
+                    text-gray-500 hover:bg-gray-50
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
                   Next
                 </button>

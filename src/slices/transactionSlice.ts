@@ -5,7 +5,7 @@ interface TransactionState {
   data: Transaction[];
   total: number;
   page: number;
-  pageSize: number;
+  totalPages: number;
   loading: boolean;
   error: string | null;
   drivers: Driver[];
@@ -16,7 +16,7 @@ const initialState: TransactionState = {
   data: [],
   total: 0,
   page: 1,
-  pageSize: 10,
+  totalPages: 10,
   loading: false,
   error: null,
   drivers: [],
@@ -36,13 +36,13 @@ const transactionSlice = createSlice({
     },
     fetchTransactionsSuccess(
       state,
-      action: PayloadAction<{ data: Transaction[]; total: number; page: number; pageSize: number }>,
+      action: PayloadAction<{ data: Transaction[]; total: number; page: number; totalPages: number }>,
     ) {
       state.loading = false;
       state.data = action.payload.data;
       state.total = action.payload.total;
       state.page = action.payload.page;
-      state.pageSize = action.payload.pageSize;
+      state.totalPages = action.payload.totalPages;
     },
     fetchTransactionsFailure(state, action: PayloadAction<string>) {
       state.loading = false;

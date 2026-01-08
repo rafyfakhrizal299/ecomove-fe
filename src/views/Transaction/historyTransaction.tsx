@@ -22,7 +22,7 @@ const HistoryTransaction: React.FC<HistoryTransactionProps> = ({ id, onClose }) 
     split.map((data, index) => {
       mop += index === split.length - 1 ? data : data + ',' 
     })
-    return mop.replace('-', ' ').toUpperCase()
+    return mop.replace('/-/g', ' ').toUpperCase()
   } 
 
 

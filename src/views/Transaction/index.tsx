@@ -24,6 +24,7 @@ const statusOptions = [
   'Delivered',
   'multiple delivery attempts failed',
   'Returned to Sender',
+  'Cancelled',
 ];
 
 const Transaction: React.FC = () => {
@@ -206,13 +207,11 @@ const Transaction: React.FC = () => {
                               onChange={(e) => handleStatusChange(transaction.id, e.target.value)}
                               className="w-full max-w-[200px] border rounded-md px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                             >
-                              {statusOptions
-                                .slice(statusOptions.indexOf(transaction.status))
-                                .map((s) => (
-                                  <option key={s} value={s}>
-                                    {s}
-                                  </option>
-                                ))}
+                              {statusOptions.map((s) => (
+                                <option key={s} value={s}>
+                                  {s}
+                                </option>
+                              ))}
                             </select>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">

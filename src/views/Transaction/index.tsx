@@ -61,7 +61,7 @@ const Transaction: React.FC = () => {
     split.map((data, index) => {
       mop += index === split.length - 1 ? data + ',' : data
     })
-    return mop.toUpperCase()
+    return mop.replace(',', ' ').toUpperCase()
   } 
 
   useEffect(() => {
@@ -181,9 +181,6 @@ const Transaction: React.FC = () => {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[150px]">
                         Payment Status
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[150px]">
-                        Payment Method
-                      </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap min-w-[250px]">
                         Notes
                       </th>
@@ -301,9 +298,6 @@ const Transaction: React.FC = () => {
                             <div className="bg-cyan-700 text-white px-3 py-1 rounded-[20px] font-semibold border-white border-2 inline-block min-w-[120px] text-center">
                               {transaction.paymentStatus}
                             </div>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white max-w-[150px] truncate">
-                            {changeTheMOP(transaction.modeOfPayment)}
                           </td>
                           <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
                             <textarea

@@ -22,7 +22,7 @@ const HistoryTransaction: React.FC<HistoryTransactionProps> = ({ id, onClose }) 
     split.map((data, index) => {
       mop += index === split.length - 1 ? data + ',' : data
     })
-    return mop.toUpperCase()
+    return mop.replace(',', ' ').toUpperCase()
   } 
 
 
@@ -133,7 +133,7 @@ const HistoryTransaction: React.FC<HistoryTransactionProps> = ({ id, onClose }) 
                             {r.packageType}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {r.modeOfPayment}
+                            {changeTheMOP(r.modeOfPayment)}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
                             {r.deliveryNotes}

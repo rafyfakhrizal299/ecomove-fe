@@ -56,8 +56,12 @@ const Transaction: React.FC = () => {
   const safeTotal = Number.isFinite(Number(total)) ? Number(total) : 0;
 
   const changeTheMOP = (value: string) =>{
-    let changeSpace = value.replace('-', ' ')
-    return changeSpace.toUpperCase()
+    let mop = '';
+    let split = value.split(',')
+    split.map((data, index) => {
+      mop += index === split.length - 1 ? data + ',' : data
+    })
+    return mop.toUpperCase()
   } 
 
   useEffect(() => {
@@ -77,7 +81,7 @@ const Transaction: React.FC = () => {
         );
         setNewDriver(null);
       }
-    }
+    } 
   }, [drivers, newDriver, dispatch]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -322,7 +326,7 @@ const Transaction: React.FC = () => {
                               onClick={() => handleViewHistory(transaction.id)}
                               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap text-sm"
                             >
-                              View History
+                              Detail
                             </button>
                           </td>
                         </tr>

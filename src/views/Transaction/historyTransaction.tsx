@@ -16,6 +16,16 @@ const HistoryTransaction: React.FC<HistoryTransactionProps> = ({ id, onClose }) 
   const dispatch = useDispatch<AppDispatch>();
   const { detail, loading, error } = useSelector((state: RootState) => state.transaction);
 
+  const changeTheMOP = (value: string) =>{
+    let mop = '';
+    let split = value.split(',')
+    split.map((data, index) => {
+      mop += index === split.length - 1 ? data + ',' : data
+    })
+    return mop.toUpperCase()
+  } 
+
+
   useEffect(() => {
     if (id) {
       dispatch(fetchTransactionDetailRequest(id));
@@ -24,7 +34,7 @@ const HistoryTransaction: React.FC<HistoryTransactionProps> = ({ id, onClose }) 
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-5xl transform transition-all duration-300">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl transform transition-all duration-300">
         {/* Modal Header */}
         <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -62,6 +72,10 @@ const HistoryTransaction: React.FC<HistoryTransactionProps> = ({ id, onClose }) 
                 <p className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
                   <strong>Address:</strong> {detail.address}
                 </p>
+                
+                <p className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                  <strong>Payment Method:</strong> {changeTheMOP(detail.modeOfPayment)}
+                </p>
               </div>
 
               <h2 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
@@ -87,7 +101,7 @@ const HistoryTransaction: React.FC<HistoryTransactionProps> = ({ id, onClose }) 
                         Package
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                        Service
+                        Payment
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
                         Notes
@@ -116,10 +130,10 @@ const HistoryTransaction: React.FC<HistoryTransactionProps> = ({ id, onClose }) 
                             {r.deliveryType}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {r.packageSize} / {r.packageType}
+                            {r.packageType}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {'-'}
+                            {r.modeOfPayment}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
                             {r.deliveryNotes}

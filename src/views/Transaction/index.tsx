@@ -55,6 +55,11 @@ const Transaction: React.FC = () => {
   const safeTotalPages = Number.isFinite(totalPages) && totalPages > 0 ? totalPages : 1;
   const safeTotal = Number.isFinite(Number(total)) ? Number(total) : 0;
 
+  const changeTheMOP = (value: string) =>{
+    let changeSpace = value.replace('-', ' ')
+    return changeSpace.toUpperCase()
+  } 
+
   useEffect(() => {
     dispatch(fetchTransactionsRequest({ page: 1, limit: 10, search: '' }));
     dispatch(fetchDriversRequest());
@@ -294,7 +299,7 @@ const Transaction: React.FC = () => {
                             </div>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white max-w-[150px] truncate">
-                            {transaction.modeOfPayment}
+                            {changeTheMOP(transaction.modeOfPayment)}
                           </td>
                           <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
                             <textarea

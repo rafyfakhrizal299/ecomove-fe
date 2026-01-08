@@ -18,7 +18,7 @@ const HistoryTransaction: React.FC<HistoryTransactionProps> = ({ id, onClose }) 
 
   const changeTheMOP = (value: string) =>{
     let mop = '';
-    let split = value.split(',')
+    let split = value.split(', ')
     split.map((data, index) => {
       mop += index === split.length - 1 ? data + ',' : data
     })

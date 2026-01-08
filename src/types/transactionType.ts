@@ -58,6 +58,7 @@ export interface Receiver {
   deliveryType: string;
   packageSize: string;
   distance: string;
+  modeOfPayment: string,
   fee: string;
   bringPouch: boolean;
   itemType: string;

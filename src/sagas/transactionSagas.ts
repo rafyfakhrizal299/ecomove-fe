@@ -35,9 +35,9 @@ function* fetchTransactionsSaga(
   action: ReturnType<typeof fetchTransactionsRequest>
 ): SagaIterator {
   try {
-    const { page, limit, search } = action.payload;
+    const { page, limit, search, statuses } = action.payload;
 
-    const response = yield call(fetchTransactionsApi, page, limit, search);
+    const response = yield call(fetchTransactionsApi, page, limit, search, statuses);
 
     yield put(
       fetchTransactionsSuccess({

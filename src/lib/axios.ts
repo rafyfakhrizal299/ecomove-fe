@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://ecomove-be-dev.vercel.app';
+const API_URL = process.env.REACT_APP_BE_URL || 'https://ecomove-be-dev.vercel.app';
 
 const axiosInstance = axios.create({
   baseURL: API_URL,

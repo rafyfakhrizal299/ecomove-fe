@@ -161,18 +161,7 @@ const DriverDropdown: React.FC<DriverDropdownProps> = ({
                 filter
                 filterInputAutoFocus
                 onFilter={(e: { filter: string }) => setSearchQuery(e.filter || '')}
-                className="w-full min-w-[200px] max-w-[250px] text-sm h-12
-                    px-4
-                    rounded-md
-                    border
-                    border-gray-300
-                    bg-white
-                    text-gray-900
-                    focus:outline-none
-                    focus:ring-2
-                    focus:ring-blue-500
-                    focus:border-blue-500
-                "
+                className="input-bordered"
                 panelClassName="max-h-96 overflow-y-auto"
                 itemTemplate={itemTemplate}
                 onHide={handlePanelHide}

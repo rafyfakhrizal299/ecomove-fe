@@ -14,11 +14,17 @@ import HistoryTransaction from './historyTransaction';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
+import { MultiSelect } from 'primereact/multiselect';
 import { Chip } from 'primereact/chip';
+import { InputIcon } from 'primereact/inputicon';
+import { IconField } from 'primereact/iconfield';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.css';
 import { toFormattedDate } from '../../utils/date.utils';
+import { getLocalStorage, setLocalStorage } from '../../utils/localStorage.utils';
 import DriverDropdown from './components/DriverDropdown';
+import Input from 'react-select/dist/declarations/src/components/Input';
+import { InputText } from 'primereact/inputtext';
 
 const statusOptions = [
   'Booked',
@@ -51,8 +57,17 @@ const Transaction: React.FC = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(() => {
+    const saved = getLocalStorage('transactionStatusFilter');
+    return saved ? JSON.parse(saved) : statusOptions;
+  });
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
+
+  useEffect(() => {
+    dispatch(fetchTransactionsRequest({ page: 1, limit: 10, search: '', statuses: selectedStatuses }));
+    dispatch(fetchDriversRequest());
+  }, [dispatch, selectedStatuses]);
   const safePage = Number.isFinite(page) && page > 0 ? page : 1;
   const safeTotalPages = Number.isFinite(totalPages) && totalPages > 0 ? totalPages : 1;
   const safeTotal = Number.isFinite(Number(total)) ? Number(total) : 0;
@@ -70,14 +85,21 @@ const Transaction: React.FC = () => {
     return mop.replace(',', ' ').toUpperCase()
   }
 
-  useEffect(() => {
-    dispatch(fetchTransactionsRequest({ page: 1, limit: 10, search: '' }));
-    dispatch(fetchDriversRequest());
-  }, [dispatch]);
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    dispatch(fetchTransactionsRequest({ page: 1, limit: 10, search: e.target.value }));
+    dispatch(fetchTransactionsRequest({ page: 1, limit: 10, search: e.target.value, statuses: selectedStatuses }));
+  };
+
+  const handleStatusFilterChange = (e: any) => {
+    const newStatuses = e.value;
+    setSelectedStatuses(newStatuses);
+    setLocalStorage('transactionStatusFilter', JSON.stringify(newStatuses));
+    dispatch(fetchTransactionsRequest({
+      page: 1,
+      limit: 10,
+      search: searchQuery,
+      statuses: newStatuses
+    }));
   };
 
 
@@ -97,6 +119,7 @@ const Transaction: React.FC = () => {
         page: newPage,
         limit: safePageSize,
         search: searchQuery,
+        statuses: selectedStatuses,
       }));
     }
   };
@@ -122,25 +145,36 @@ const Transaction: React.FC = () => {
   };
 
   return (
-    <div className="py-6 sm:px-6 lg:px-8 w-full max-w-full">
+    <div className="py-6 sm:px-6 lg:px-8 w-full max-w-full relative">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
         Admin Transaction Management
       </h1>
-      <Card className="p-5 mb-6 w-full">
+      <Card className="p-5 mb-6 w-full max-w-[80vw] overflow-auto">
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="w-full sm:w-auto">
-            <input
-              type="text"
-              placeholder="Search transactions..."
-              className="w-full sm:w-64 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              value={searchQuery}
-              onChange={handleSearchChange}
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <IconField iconPosition="right" className="flex-1 sm:flex-none">
+              <InputIcon className="pi pi-search" />
+              <InputText
+                type="search"
+                placeholder="Search transactions..."
+                className="input-bordered "
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+            </IconField>
+            <MultiSelect
+              value={selectedStatuses}
+              onChange={handleStatusFilterChange}
+              options={statusOptions}
+              placeholder="Filter by Status"
+              className="input-bordered"
             />
           </div>
           <button
             onClick={() => setShowExportModal(true)}
-            className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap"
+            className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap flex items-center justify-center gap-2"
           >
+            <i className="pi pi-file-excel" />
             Download Report
           </button>
         </div>
@@ -158,11 +192,22 @@ const Transaction: React.FC = () => {
           }}
           loading={loading}
           scrollable
-          className="w-full"
+          size='small'
+          stripedRows
           emptyMessage="No transactions found."
         >
           <Column field="id" header="ID" style={{ minWidth: '80px' }} />
-          <Column field="tranID" header="Booking" style={{ minWidth: '100px' }} />
+          <Column
+            header="Customer"
+            body={(rowData) => {
+              const customerName = rowData.user
+                ? `${rowData.user.firstName} ${rowData.user.lastName}`.trim()
+                : rowData.contactName || '-';
+              return customerName;
+            }}
+            style={{ minWidth: '100px' }}
+          />
+          <Column field="vehicle" header="Vehicle" style={{ minWidth: '100px' }} />
           <Column
             field="createdAt"
             header="Date and Time"
@@ -181,18 +226,7 @@ const Transaction: React.FC = () => {
                 placeholder="Select status"
                 filter
                 filterInputAutoFocus
-                className="w-full min-w-[200px] max-w-[250px] text-sm h-12
-                    px-4
-                    rounded-md
-                    border
-                    border-gray-300
-                    bg-white
-                    text-gray-900
-                    focus:outline-none
-                    focus:ring-2
-                    focus:ring-blue-500
-                    focus:border-blue-500
-                "
+                className="input-bordered "
                 panelClassName="max-h-96 overflow-y-auto"
               />
             )}
@@ -265,6 +299,9 @@ const Transaction: React.FC = () => {
                 Detail
               </button>
             )}
+            frozen
+            className='sticky right-0 bg-white'
+            alignFrozen="right"
             style={{ minWidth: '140px' }}
           />
         </DataTable>

@@ -4,6 +4,9 @@ import 'assets/css/main.css'; // Pastikan Anda memiliki file ini untuk Tailwind 
 import App from './app';
 import { Provider } from 'react-redux';
 import { store } from './store/mainStore';
+import "primereact/resources/themes/lara-light-cyan/theme.css";
+
+import { PrimeReactProvider } from 'primereact/api';
 
 const container = document.getElementById('root');
 if (container) {
@@ -11,7 +14,9 @@ if (container) {
   root.render(
     // <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <PrimeReactProvider>
+        <App />
+      </PrimeReactProvider>
     </Provider>,
     // </React.StrictMode>,
   );

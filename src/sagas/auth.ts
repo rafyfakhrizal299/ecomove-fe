@@ -29,7 +29,8 @@ function* loginApi(credentials: {
   email: string;
   password: string;
 }): Generator<any, any, AxiosResponse> {
-  const API_URL = 'https://ecomove-be-dev.vercel.app/auth/login';
+  const BASE_API_URL = process.env.REACT_APP_BE_URL || 'https://ecomove-be-dev.vercel.app';
+  const API_URL = `${BASE_API_URL}/auth/login`;
 
   try {
     const response: AxiosResponse = yield call(axios.post, API_URL, credentials);

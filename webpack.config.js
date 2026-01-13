@@ -1,4 +1,5 @@
 const path = require('path'),
+  webpack = require('webpack'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
   ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin'),
   ESLintPlugin = require('eslint-webpack-plugin'),
@@ -91,6 +92,10 @@ baseConfig = {
       },
     }),
     new ForkTsCheckerWebpackPlugin(),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+      'process.env.REACT_APP_BE_URL': JSON.stringify(process.env.REACT_APP_BE_URL || ''),
+    }),
   ],
 };
 

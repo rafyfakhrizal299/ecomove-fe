@@ -5,9 +5,16 @@ export const fetchTransactionsApi = async (
   page: number,
   pageSize: number,
   search: string,
+  statuses?: string[],
 ): Promise<TransactionPageResponse> => {
+  const params: any = { page, pageSize, search };
+
+  if (statuses && statuses.length > 0) {
+    params.statuses = statuses.join(',');
+  }
+
   const response = await axiosInstance.get('/transaction/page', {
-    params: { page, pageSize, search },
+    params,
   });
   return response.data;
 };

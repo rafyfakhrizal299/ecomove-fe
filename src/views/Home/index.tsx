@@ -84,7 +84,7 @@ const HomePage: React.FC = () => {
         {/* Per Minggu */}
         <Card className="p-5">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-            Statistik Weekly
+            Statistic Weekly
           </h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={charts.weekly} barCategoryGap="20%">
@@ -104,7 +104,7 @@ const HomePage: React.FC = () => {
         {/* Per Bulan */}
         <Card className="p-5">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-            Statistik Monthly
+            Statistic Monthly
           </h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={charts.monthly} barCategoryGap="20%">
@@ -124,7 +124,7 @@ const HomePage: React.FC = () => {
         {/* Per Tahun */}
         <Card className="p-5">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-            Statistik Yearly
+            Statistic Yearly
           </h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={charts.yearly} barCategoryGap="20%">

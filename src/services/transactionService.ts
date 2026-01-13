@@ -31,7 +31,8 @@ export const createDriverApi = async (driver: {
   phoneNumber: string;
 }): Promise<Driver> => {
   const response = await axiosInstance.post('/driver', driver);
-  return response.data as Driver;
+  // Backend returns {status, message, data: {...}} so we need to extract the data property
+  return response.data.data || response.data as Driver;
 };
 
 export const downloadExcelTransaction = {

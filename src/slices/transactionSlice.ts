@@ -122,13 +122,13 @@ const transactionSlice = createSlice({
     },
     createDriverRequest: (
       state,
-      _action: PayloadAction<{ name: string; licenseNumber: string; phoneNumber: string }>,
+      _action: PayloadAction<{ name: string; licenseNumber: string; phoneNumber: string; transactionId?: number }>,
     ) => {
       state.loading = true;
     },
     createDriverSuccess: (state, action: PayloadAction<Driver>) => {
       state.loading = false;
-      state.drivers.push(action.payload); // langsung push aja
+      state.drivers.push(action.payload);
     },
     createDriverFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;

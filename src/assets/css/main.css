@@ -3,6 +3,9 @@
 @tailwind utilities;
 @import '@fontsource/manrope';
 
+@import "primereact/resources/themes/lara-light-cyan/theme.css";
+
+
 body {
   @apply font-manrope;
 }

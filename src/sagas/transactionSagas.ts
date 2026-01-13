@@ -73,32 +73,19 @@ export function* createDriverSaga(
   action: ReturnType<typeof createDriverRequest>,
 ): Generator<any, void, any> {
   try {
-    const apiResult: { id: string } = yield call(createDriverApi, {
+    const newDriver: Driver = yield call(createDriverApi, {
       name: action.payload.name,
       licenseNumber: action.payload.licenseNumber,
       phoneNumber: action.payload.phoneNumber,
     });
 
-    const newDriver: Driver = {
-      id: apiResult.id,
-      name: action.payload.name,
-      licenseNumber: action.payload.licenseNumber,
-      phoneNumber: action.payload.phoneNumber,
-      email: '',
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
     yield put(createDriverSuccess(newDriver));
 
+    // If transactionId is in the payload, automatically update the transaction with the new driver
     if ((action.payload as any).transactionId) {
-      yield put(
-        updateTransactionRequest({
-          id: (action.payload as any).transactionId,
-          updates: { driverId: newDriver.id },
-        }),
-      );
+      const transactionId = (action.payload as any).transactionId;
+      const updated: Transaction = yield call(updateTransactionApi, transactionId, { driverId: newDriver.id });
+      yield put(updateTransactionSuccess({ id: transactionId, updates: { driverId: newDriver.id } }));
     }
   } catch (error: any) {
     yield put(createDriverFailure(error.message));

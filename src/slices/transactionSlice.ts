@@ -46,26 +46,21 @@ const transactionSlice = createSlice({
           total: number;
           totalPages: number;
         };
-      }>
+      }>,
     ) {
       state.loading = false;
       state.data = action.payload.data;
 
       const p = action.payload.pagination;
-      console.log(p)
+      console.log(p);
 
       state.total = Number.isFinite(p.total) ? p.total : 0;
 
-      state.page =
-        Number.isFinite(p.page) && p.page > 0 ? p.page : 1;
+      state.page = Number.isFinite(p.page) && p.page > 0 ? p.page : 1;
 
-      state.pageSize =
-        Number.isFinite(p.limit) && p.limit > 0 ? p.limit : 10;
+      state.pageSize = Number.isFinite(p.limit) && p.limit > 0 ? p.limit : 10;
 
-      state.totalPages =
-        Number.isFinite(p.totalPages) && p.totalPages > 0
-          ? p.totalPages
-          : 1;
+      state.totalPages = Number.isFinite(p.totalPages) && p.totalPages > 0 ? p.totalPages : 1;
     },
     fetchTransactionsFailure(state, action: PayloadAction<string>) {
       state.loading = false;
@@ -122,7 +117,12 @@ const transactionSlice = createSlice({
     },
     createDriverRequest: (
       state,
-      _action: PayloadAction<{ name: string; licenseNumber: string; phoneNumber: string; transactionId?: number }>,
+      _action: PayloadAction<{
+        name: string;
+        licenseNumber: string;
+        phoneNumber: string;
+        transactionId?: number;
+      }>,
     ) => {
       state.loading = true;
     },

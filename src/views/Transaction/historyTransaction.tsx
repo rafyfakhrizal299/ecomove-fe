@@ -448,7 +448,7 @@ function HistoryTransaction({ id, onClose }: HistoryTransactionProps) {
                     : '-'}
                 </p>
               </div>
-              <div className="bg-green-50 dark:bg-gray-600 rounded-lg p-4">
+              <div className="bg-green-50 dark:bg-gray-600 rounded-lg p-4 hidden">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Fee</p>
                 <p className="text-xl font-bold text-green-600 dark:text-green-400">
                   ₱{detail.totalFee || '0'}

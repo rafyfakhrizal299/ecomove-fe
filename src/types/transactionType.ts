@@ -10,10 +10,11 @@ export interface Driver {
 }
 
 export interface Transaction {
-  id: number;
+  id: number | string;
   userId: string;
   savedAddress: boolean;
-  senderAddressId: number;
+  addAddress: boolean;
+  senderAddressId: number | null;
   address: string;
   unitStreet: string;
   pinnedLocation: string;
@@ -24,12 +25,17 @@ export interface Transaction {
   totalFee: string;
   deliveryNotes: string | null;
   pickupTime: string | null;
+  pickupDate: string | null;
+  pickupType: string | null;
   orderid: string | null;
-  tranID: string;
+  tranID: string | null;
   paymentStatus: string;
   modeOfPayment: string;
   status: string;
   driverId: string | null;
+  vehicle: string;
+  totalETA: string;
+  totalCO2: number;
   createdAt: string;
   updatedAt: string;
   driver?: Driver;
@@ -45,28 +51,33 @@ export interface TransactionPageResponse {
 
 export interface Receiver {
   id: number;
-  transactionId: number;
+  transactionId: number | string;
   savedAddress: boolean;
   addAddress: boolean;
-  receiverAddressId: number;
+  receiverAddressId: number | null;
   address: string;
   unitStreet: string;
   pinnedLocation: string;
   contactName: string;
   contactNumber: string;
-  contactEmail: string;
+  contactEmail: string | null;
   deliveryType: string;
-  packageSize: string;
+  eVehicle: string;
+  packageSize?: string;
   distance: string;
-  modeOfPayment: string,
+  modeOfPayment: string;
   fee: string;
   bringPouch: boolean;
   itemType: string;
   packageType: string;
   cod: boolean;
   itemProtection: boolean;
-  deliveryNotes: string;
+  deliveryNotes: string | null;
   weight: string;
+  co: string;
+  eta: number;
+  etaFormatted: string;
+  statusCanceled: boolean;
   createdAt: string;
   updatedAt: string;
 }

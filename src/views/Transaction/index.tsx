@@ -39,6 +39,10 @@ const statusOptions = [
   'Cancelled',
 ];
 
+const paymentStatusOptions = ['pending', 'paid'];
+
+const paymentMethodOptions = ['cash-on-delivery', 'gcash'];
+
 const Transaction: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -128,6 +132,14 @@ const Transaction: React.FC = () => {
     dispatch(updateTransactionRequest({ id, updates: { status } }));
   };
 
+  const handlePaymentStatusChange = (id: number, paymentStatus: string) => {
+    dispatch(updateTransactionRequest({ id, updates: { paymentStatus } }));
+  };
+
+  const handlePaymentMethodChange = (id: number, modeOfPayment: string) => {
+    dispatch(updateTransactionRequest({ id, updates: { modeOfPayment } }));
+  };
+
   const handleNotesChange = (id: number, value: string) => {
     setNotesDraft((prev) => ({ ...prev, [id]: value }));
   };
@@ -145,11 +157,11 @@ const Transaction: React.FC = () => {
   };
 
   return (
-    <div className="py-6 sm:px-6 lg:px-8 w-full max-w-full relative">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+    <div className=" w-full max-w-full relative">
+      <h1 className="font-bold text-gray-900 dark:text-white mb-6">
         Admin Transaction Management
       </h1>
-      <Card className="p-5 mb-6 w-full max-w-[80vw] overflow-auto">
+      <Card className="p-5 mb-6 w-full max-w-[85vw] overflow-auto">
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <IconField iconPosition="right" className="flex-1 sm:flex-none">
@@ -172,9 +184,9 @@ const Transaction: React.FC = () => {
           </div>
           <button
             onClick={() => setShowExportModal(true)}
-            className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-4 py-2 bg-green-900 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap flex items-center justify-center gap-2"
           >
-            <i className="pi pi-file-excel" />
+            <i className="pi pi-download" />
             Download Report
           </button>
         </div>
@@ -194,30 +206,39 @@ const Transaction: React.FC = () => {
           scrollable
           size='small'
           stripedRows
-          emptyMessage="No transactions found."
+          emptyMessage={
+            <div className="flex flex-col items-center justify-center p-6 text-gray-500">
+              <span>No transactions found.</span>
+            </div>
+          }
         >
-          <Column field="id" header="ID" style={{ minWidth: '80px' }} />
           <Column
-            header="Customer"
+            header="Transaction Info"
             body={(rowData) => {
               const customerName = rowData.user
                 ? `${rowData.user.firstName} ${rowData.user.lastName}`.trim()
                 : rowData.contactName || '-';
-              return customerName;
+              return (
+                <div className="flex flex-col gap-1 py-1">
+                  <div className="text-lg font-semibold text-slate-700 dark:text-slate-300">
+                    #{rowData.id}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {rowData.createdAt ? toFormattedDate(new Date(rowData.createdAt)) : '-'}
+                  </div>
+                  <div className="text-sm text-gray-700 dark:text-gray-300">
+                    {rowData.vehicle || '-'}
+                  </div>
+                  <div className="text-sm font-bold text-gray-500 dark:text-gray-400">
+                    {customerName}
+                  </div>
+                </div>
+              );
             }}
-            style={{ minWidth: '100px' }}
-          />
-          <Column field="vehicle" header="Vehicle" style={{ minWidth: '100px' }} />
-          <Column
-            field="createdAt"
-            header="Date and Time"
-            body={(rowData) =>
-              rowData.createdAt ? toFormattedDate(new Date(rowData.createdAt)) : '-'
-            }
-            style={{ minWidth: '180px' }}
+            style={{ minWidth: '200px' }}
           />
           <Column
-            header="Status"
+            header="Booking Status"
             body={(rowData) => (
               <Dropdown
                 value={rowData.status}
@@ -263,9 +284,65 @@ const Transaction: React.FC = () => {
             field="paymentStatus"
             header="Payment Status"
             body={(rowData) => (
-              <div className="bg-cyan-700 text-white px-3 py-1 rounded-[20px] font-semibold border-white border-2 inline-block min-w-[120px] text-center">
-                {rowData.paymentStatus}
-              </div>
+              <Dropdown
+                value={rowData.paymentStatus}
+                onChange={(e) => handlePaymentStatusChange(rowData.id, e.value)}
+                options={paymentStatusOptions}
+                placeholder="Select payment status"
+                className="input-bordered"
+                valueTemplate={(option) => {
+                  const bgColor = option === 'paid' ? 'bg-green-200' : 'bg-orange-200';
+                  return (
+                    <div className={`flex gap-2  items-center uppercase text-xs mt-1`}>
+                      <div className={`${bgColor} h-3 w-3 rounded-full my-auto`}></div>
+                      {option}
+                    </div>
+                  );
+                }}
+                itemTemplate={(option) => {
+                  const bgColor = option === 'paid' ? 'bg-green-200' : 'bg-orange-200';
+                  return (
+                    <div className={`flex gap-2 items-center uppercase text-xs`}>
+                      <div className={`${bgColor} h-3 w-3 rounded-full my-auto`}></div>
+                      {option}
+                    </div>
+                  );
+                }}
+              />
+            )}
+            style={{ minWidth: '150px' }}
+          />
+          <Column
+            field="modeOfPayment"
+            header="Payment Method"
+            body={(rowData) => (
+              <Dropdown
+                value={rowData.modeOfPayment}
+                onChange={(e) => handlePaymentMethodChange(rowData.id, e.value)}
+                options={paymentMethodOptions}
+                placeholder="Select payment method"
+                className="input-bordered"
+                valueTemplate={(option) => {
+                  const bgColor = option === 'gcash' ? 'bg-blue-200' : 'bg-gray-200';
+                  const displayText = option === 'cash-on-delivery' ? 'COD' : 'GCash';
+                  return (
+                    <div className={`flex gap-2 items-center uppercase text-xs mt-1`}>
+                      <div className={`${bgColor} h-3 w-3 rounded-full my-auto`}></div>
+                      {displayText}
+                    </div>
+                  );
+                }}
+                itemTemplate={(option) => {
+                  const bgColor = option === 'gcash' ? 'bg-blue-200' : 'bg-gray-200';
+                  const displayText = option === 'cash-on-delivery' ? 'COD' : 'GCash';
+                  return (
+                    <div className={`flex gap-2 items-center uppercase text-xs`}>
+                      <div className={`${bgColor} h-3 w-3 rounded-full my-auto`}></div>
+                      {displayText}
+                    </div>
+                  );
+                }}
+              />
             )}
             style={{ minWidth: '150px' }}
           />
@@ -292,17 +369,18 @@ const Transaction: React.FC = () => {
           <Column
             header="Actions"
             body={(rowData) => (
-              <button
-                onClick={() => handleViewHistory(rowData.id)}
-                className="px-4 py-2 bg-[#5D8F3D] text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap text-sm"
-              >
-                Detail
-              </button>
+              <div className='px-4'>
+                <button
+                  onClick={() => handleViewHistory(rowData.id)}
+                  className="px-4 py-2 bg-green-800 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap text-sm"
+                >
+                  Detail
+                </button>
+              </div>
             )}
             frozen
             className='sticky right-0 bg-white'
             alignFrozen="right"
-            style={{ minWidth: '140px' }}
           />
         </DataTable>
       </Card>
